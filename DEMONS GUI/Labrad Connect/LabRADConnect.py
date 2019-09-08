@@ -11,6 +11,7 @@ import datetime
 import os
 import dirExplorer
 
+LABRADPASSWORD = 'sSET2018'
 path = os.path.dirname(os.path.realpath(__file__))
 LabRADConnectUI, QtBaseClass = uic.loadUiType(os.path.join(path, "LabRADConnect.ui"))
 
@@ -131,9 +132,9 @@ class Window(QtGui.QMainWindow, LabRADConnectUI):
                     from labrad.wrappers import connectAsync
                     try:
                         if LabradPosition == 'Local':
-                            cxn = yield connectAsync(host = '127.0.0.1', password = 'pass')
+                            cxn = yield connectAsync(host = '127.0.0.1', password = LABRADPASSWORD)
                         elif LabradPosition == '4KMonitor':
-                            cxn = yield connectAsync(host = '4KMonitor', password = 'pass')
+                            cxn = yield connectAsync(host = '4KMonitor', password = LABRADPASSWORD)
                         self.LabradDictionary[LabradPosition][servername] = cxn
                         connection_flag = True
                     except Exception as inst:

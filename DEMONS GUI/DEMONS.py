@@ -79,7 +79,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
     """ The following section connects actions related to default opening windows."""
     def connect(self, key, object):
         try:
-            for name, window in self.MeasurementWindows.iteritems():
+            for name, window in self.MeasurementWindows.items():
                 if name != 'LabRAD': #Skip through labradconnect window
                     if str(key) in window.serversList:
                         window.connectServer(str(key), object)
@@ -88,7 +88,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
 
     def disconnect(self, key):
         try:
-            for name, window in self.MeasurementWindows.iteritems():
+            for name, window in self.MeasurementWindows.items():
                 if name != 'LabRAD': #No module need cxn
                     if str(key) in window.serversList:
                         window.disconnectServer(key)
@@ -97,7 +97,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
 
     def updateDataVaultFolder(self, DVfolder):
         try:
-            for name, window in self.MeasurementWindows.iteritems():
+            for name, window in self.MeasurementWindows.items():
                 if 'dv' in window.serversList:
                     window.updateDataVaultDirectory(window, DVfolder)
         except Exception as inst:
@@ -105,7 +105,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
 
     def distributeSessionFolder(self, folder):
         try:
-            for name, window in self.MeasurementWindows.iteritems():
+            for name, window in self.MeasurementWindows.items():
                 setSessionFolder = getattr(window, 'setSessionFolder', None)
                 if callable(setSessionFolder):
                     window.setSessionFolder(folder)
