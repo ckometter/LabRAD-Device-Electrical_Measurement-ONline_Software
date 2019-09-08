@@ -1,16 +1,17 @@
 import sys
+import os
 import twisted
-from PyQt4 import QtCore, QtGui, QtTest, uic
+from PyQt5 import QtCore, QtGui, QtTest, uic
 from twisted.internet.defer import inlineCallbacks, Deferred
 import numpy as np
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
 
-path = sys.path[0] + r"\DataVaultBrowser"
-Ui_dvExplorer, QtBaseClass = uic.loadUiType(path + r"\dvExplorer.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+Ui_dvExplorer, QtBaseClass = uic.loadUiType(os.path.join(path, "dvExplorer.ui"))
 
 class dataVaultExplorer(QtGui.QMainWindow, Ui_dvExplorer):
     accepted = QtCore.pyqtSignal()
@@ -59,7 +60,7 @@ class dataVaultExplorer(QtGui.QMainWindow, Ui_dvExplorer):
                 self.dirName.setText(self.curDir)
                 self.dirName.setStyleSheet("QLabel#dirName {color: rgb(131,131,131);}")
         except Exception as inst:
-            print inst
+            print(inst)
 
     @inlineCallbacks
     def updateDirs(self, subdir):
@@ -121,8 +122,8 @@ class dataVaultExplorer(QtGui.QMainWindow, Ui_dvExplorer):
 
 if __name__ == "__main__":
 	app = QtGui.QApplication([])
-	from qtreactor import pyqt4reactor
-	pyqt4reactor.install()
+	from qtreactor import qt5reactor
+	qt5reactor.install()
 	from twisted.internet import reactor
 	window = dataVaultExplorer(reactor)
 	window.show()

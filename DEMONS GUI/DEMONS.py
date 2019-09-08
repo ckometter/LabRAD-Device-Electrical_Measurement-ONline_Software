@@ -1,23 +1,24 @@
 #Written by Raymond
 import sys
-from PyQt4 import Qt, QtGui, QtCore, uic
+import os
+from PyQt5 import Qt, QtGui, QtWidgets, QtCore, uic
 import time 
 import ctypes
-import exceptions
-myappid = 'YoungLab.DeviceElectricalMeasurementONlineSoftware'
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+#import exceptions
+#myappid = 'YoungLab.DeviceElectricalMeasurementONlineSoftware'
+#ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-path = sys.path[0]
-sys.path.append(path + r'\Resources')
-sys.path.append(path + r'\Labrad Connect')
-sys.path.append(path + r'\DataVaultBrowser')
-sys.path.append(path + r'\Four Terminal Gate Sweep Probe Station')
-sys.path.append(path + r'\Two Terminal Gate Sweep Probe Station')
-sys.path.append(path + r'\Four Terminal Gate Sweep SQUID')
-sys.path.append(path + r'\DAC Controler')
+path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(path, 'Resources'))
+sys.path.append(os.path.join(path, 'Labrad Connect'))
+sys.path.append(os.path.join(path, 'DataVaultBrowser'))
+sys.path.append(os.path.join(path, 'Four Terminal Gate Sweep Probe Station'))
+sys.path.append(os.path.join(path, 'Two Terminal Gate Sweep Probe Station'))
+sys.path.append(os.path.join(path, 'Four Terminal Gate Sweep SQUID'))
+sys.path.append(os.path.join(path, 'DAC Controler'))
 # sys.path.append(path + r'\Data Plotter')
 
-UI_path = path + r"\MainWindow.ui"
+UI_path = os.path.join(path, "MainWindow.ui")
 MainWindowUI, QtBaseClass = uic.loadUiType(UI_path)
 
 #import all windows for gui
@@ -83,7 +84,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                     if str(key) in window.serversList:
                         window.connectServer(str(key), object)
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def disconnect(self, key):
         try:
@@ -92,7 +93,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                     if str(key) in window.serversList:
                         window.disconnectServer(key)
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def updateDataVaultFolder(self, DVfolder):
         try:
@@ -100,7 +101,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                 if 'dv' in window.serversList:
                     window.updateDataVaultDirectory(window, DVfolder)
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def distributeSessionFolder(self, folder):
         try:
@@ -110,7 +111,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                     window.setSessionFolder(folder)
         
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def SetScanningFlag(self, State):
         self.Scanning_Flag = State
@@ -122,15 +123,15 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
         try:
             self.MeasurementWindows['LabRAD'].close()
         except Exception as inst:
-            print inst
+            print(inst)
             
 #----------------------------------------------------------------------------------------------#     
 """ The following runs the GUI"""
 
 if __name__=="__main__":
-    import qt4reactor
+    import qt5reactor
     app = QtGui.QApplication(sys.argv)
-    qt4reactor.install()
+    qt5reactor.install()
     from twisted.internet import reactor
     window = MainWindow(reactor)
     window.show()

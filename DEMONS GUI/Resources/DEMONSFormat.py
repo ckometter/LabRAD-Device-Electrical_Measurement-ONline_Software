@@ -4,9 +4,9 @@ import sys
 import twisted
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 
 '''
 Open Window function that receive the window object and open it
@@ -29,7 +29,7 @@ def ReadEdit_Parameter(Function, Parameter, parametername, lineEdit):
         Parameter[parametername] = value
         lineEdit.setText(formatNum(Parameter[parametername], 6))
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Set a funnction and update a lineEdit
@@ -42,7 +42,7 @@ def SetEdit_Parameter(Function, Parameter, parametername, lineEdit):
         Parameter[parametername] = value
         lineEdit.setText(formatNum(Parameter[parametername], 6))
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 '''
 Update parameter, normally just text
 Input: dictionary of parameters, key for the value to be changed, the lineEdit where the input comes from
@@ -125,7 +125,7 @@ def SelectServer(DeviceList, DeviceName, Serverlist, ServerName):
             RedefineComboBox(DeviceList[str(DeviceName)]['ComboBoxDevice'], DeviceList[str(DeviceName)]['ServerObject'])
             RefreshIndicator(DeviceList[str(DeviceName)]['ServerIndicator'], DeviceList[str(DeviceName)]['ServerObject'])
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Takes devicelist, device name(str), target which is the name of the device in list_devices() and the indicator pushbutton
@@ -139,7 +139,7 @@ def SelectDevice(DeviceList, DeviceName, target, SequentialFunction = None):
                 DeviceList[str(DeviceName)]['DeviceObject'] = DeviceList[str(DeviceName)]['ServerObject']
                 yield DeviceList[str(DeviceName)]['DeviceObject'].select_device(str(target))
             except Exception as inst:
-                print 'Connection to ' + device +  ' failed: ', inst, ' on line: ', sys.exc_traceback.tb_lineno
+                print('Connection to ' + device +  ' failed: ', inst, ' on line: ', sys.exc_traceback.tb_lineno)
                 DeviceList[str(DeviceName)]['DeviceObject'] = False
         else:
             DeviceList[str(DeviceName)]['DeviceObject'] = False
@@ -147,7 +147,7 @@ def SelectDevice(DeviceList, DeviceName, target, SequentialFunction = None):
         if not SequentialFunction is None:
             SequentialFunction()
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Refresh Indicator based on the connection status of device
@@ -187,7 +187,7 @@ def RedefineComboBox(combobox, server, reconnect = True):
         if reconnect:
             combobox.setCurrentIndex(defaultindex)#This part change the index which should be connect to select device.
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 given a list of item names and populate that into combobox
@@ -266,7 +266,7 @@ def updateDataVaultDirectory(window, directory):
         yield window.serversList['dv'].cd('')
         yield window.serversList['dv'].cd(directory)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Clear Plots, can take a list/dict or single plot
@@ -305,7 +305,7 @@ def RefreshPlot1D(PlotList):
         for PlotName in PlotList:
             Plot1DData(PlotList[PlotName]['PlotData'][0], PlotList[PlotName]['PlotData'][1], PlotList[PlotName]['PlotObject'])
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 
 
@@ -387,7 +387,7 @@ def RefreshLineCutPlot(PlotDictionary, LineCutPlotName, PlotData):
             Plot1DData(PlotDictionary[LineCutPlotName]['PlotData'][0], PlotDictionary[LineCutPlotName]['PlotData'][1], LineCutPlot)
      
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
      
 def Division(voltage, current, multiplier = 1):
     if current != 0.0:
@@ -447,7 +447,7 @@ def Attach_ResistanceConductance(data, VoltageIndex, CurrentIndex, multiplier = 
         
         return Data_Attached
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
         
 def Generate_Difference(data, InputAIndex, InputBIndex, dataIndex):
     try:
@@ -460,7 +460,7 @@ def Generate_Difference(data, InputAIndex, InputBIndex, dataIndex):
         Data_Generated = ReplaceData(data, dataIndex, Difference)
         return Data_Generated
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
         
 '''
 Multiply array with the input list
@@ -592,11 +592,11 @@ def readNum(string, parent, warningFlag = True):
 #---------------------------------------------------------------------------------------------------------#         
 """ The following section creates a generic warning if a numebr is input without a unit."""
         
-from PyQt4 import QtGui, QtCore, uic
-import sys
+from PyQt5 import QtGui, QtCore, uic
+import os
 
-path = sys.path[0] + r"\Resources"
-Ui_UnitWarning, QtBaseClass = uic.loadUiType(path + r"\UnitWarningWindow.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+Ui_UnitWarning, QtBaseClass = uic.loadUiType(os.path.join(path, "UnitWarningWindow.ui"))
         
 class UnitWarning(QtGui.QDialog, Ui_UnitWarning):
     def __init__(self, parent, val):
@@ -628,7 +628,7 @@ def ShowWarning(text, parent = None):
     else:
         return False
 
-Ui_GeneralWarning, QtBaseClass = uic.loadUiType(path + r"\GeneralWarningWindow.ui")
+Ui_GeneralWarning, QtBaseClass = uic.loadUiType(os.path.join(path, "GeneralWarningWindow.ui"))
         
 class GeneralWarning(QtGui.QDialog, Ui_GeneralWarning):
     def __init__(self, parent, text):
@@ -677,7 +677,7 @@ def Get_SR_LI_R(LockInDevice):
         value = yield LockInDevice.r()
         returnValue(value)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 @inlineCallbacks
 def Read_LockIn_TimeConstant(LockInDevice):
@@ -708,7 +708,7 @@ def Set_SIM900_VoltageOutput(SIM900Device, VoltageSourceSlot, Voltage):
     try:
         yield SIM900Device.dc_set_voltage(VoltageSourceSlot, Voltage)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Ramp the DACADC without taking data, usually used to ramp to initial voltage. It also require a reactor to sleep asynchronously. Attention: Ramp takes instead of Number of steps, it takes stepsize which is more logical
@@ -723,7 +723,7 @@ def Ramp_SIM900_VoltageSource(SIM900Device, VoltageSourceSlot, StartingVoltage, 
             yield SIM900Device.dc_set_voltage(VoltageSourceSlot, voltage)
             SleepAsync(reactor, Delay)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 #DACADC Measurement Code
 '''
@@ -734,7 +734,7 @@ def Set_DAC(DACADC_Device, Port, Voltage):
     try:
         yield DACADC_Device.set_voltage(Port, Voltage)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Read ADC and set label
@@ -745,7 +745,7 @@ def Read_ADC_SetLabel(DACADC_Device, Port, label):
         voltage = yield Read_ADC(DACADC_Device, Port)
         label.setText(formatNum(voltage, 6))
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Read ADC and return value
@@ -756,7 +756,7 @@ def Read_ADC(DACADC_Device, Port):
         voltage = yield DACADC_Device.read_voltage(Port)
         returnValue(voltage)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Ramp the DACADC without taking data, usually used to ramp to initial voltage.
@@ -771,7 +771,7 @@ def Ramp_DACADC(DACADC_Device, Port, StartingVoltage, EndVoltage, StepSize, Dela
                 Numberofsteps = 2
             yield DACADC_Device.ramp1(Port, float(StartingVoltage), float(EndVoltage), Numberofsteps, Delay)
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Buffer_Ramp of DACADC, take the DACADC device object, list of channel output and input along with the min and max, all should be list and number of elements should match.
@@ -784,7 +784,7 @@ def Buffer_Ramp_DACADC(DACADC_Device, ChannelOutput, ChannelInput, Min, Max, Num
         data = yield DACADC_Device.buffer_ramp(ChannelOutput,ChannelInput,Min,Max,Numberofsteps,DACDelay)
         returnValue(np.transpose(data))
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 Debugging version of buffer_ramp. Use it as if it is DAC bufferramp but it does not need to be yielded
@@ -815,7 +815,7 @@ def RampMagneticField(DeviceObject, ServerName, TargetField, RampRate, Reactor):
             yield DeviceObject.set_activity(1) #Put ips in go to setpoint mode
             yield DeviceObject.set_control(2)
 
-            print 'Setting field to ' + str(TargetField)
+            print('Setting field to ' + str(TargetField))
 
             while True:
                 yield DeviceObject.set_control(3)#
@@ -832,11 +832,11 @@ def RampMagneticField(DeviceObject, ServerName, TargetField, RampRate, Reactor):
                     yield DeviceObject.set_control(3)
                     yield DeviceObject.set_activity(1)
                     yield DeviceObject.set_control(2)
-                    print 'restarting loop'
+                    print('restarting loop')
                     SleepAsync(Reactor, 0.25)
 
         if 'AMI430' in ServerName:
-            print 'Setting field to ' + str(TargetField)
+            print('Setting field to ' + str(TargetField))
             t0 = time.time() #Keep track of starting time for setting the field
             yield DeviceObject.conf_field_targ(TargetField) #Set targer field
             yield DeviceObject.ramp() #Start ramp
@@ -846,8 +846,8 @@ def RampMagneticField(DeviceObject, ServerName, TargetField, RampRate, Reactor):
                 time.sleep(2)
                 actual_field = yield DeviceObject.get_field_mag() #read actual field
     except Exception as inst:
-        print 'Scan error: ', inst
-        print 'on line: ', sys.exc_traceback.tb_lineno
+        print('Scan error: ', inst)
+        print('on line: ', sys.exc_traceback.tb_lineno)
 
 
 #Data Vault related Code
@@ -874,7 +874,7 @@ def AddParameterToDataVault(datavault, parameterdict):
         for key, value in parameterdict.iteritems():
             yield datavault.add_parameter(key, parameterdict[key])
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 '''
 grab screenshot of the window and save the screenshot to sessionfolder
@@ -884,9 +884,9 @@ def saveDataToSessionFolder(winId, SessionFolder, ScreenshotName):
         p = QtGui.QPixmap.grabWindow(winId)
         a = p.save(SessionFolder + '\\' + ScreenshotName + '.jpg','jpg')
         if not a:
-            print "Error saving Scan data picture"
+            print("Error saving Scan data picture")
     except Exception as inst:
-        print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+        print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
 #General Stuff
 
@@ -928,7 +928,7 @@ class CustomImageView(pg.ImageView):
                 self.AutoSetLevels()
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
     
     def AutoSetLevels(self):
         ZeroRemoved = self.ImageData[self.ImageData != 0.0]

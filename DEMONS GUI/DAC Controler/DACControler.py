@@ -1,10 +1,11 @@
 from __future__ import division
 import sys
+import os
 import twisted
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
-from PyQt4 import Qt, QtGui, QtCore, uic
+from PyQt5 import Qt, QtGui, QtCore, uic
 import numpy as np
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
@@ -12,12 +13,12 @@ from scipy.signal import detrend
 #importing a bunch of stuff
 
 
-path = sys.path[0] + r"\DAC Controler"
-ControlerWindowUI, QtBaseClass = uic.loadUiType(path + r"\DACControlerWindow.ui")
-Ui_ServerList, QtBaseClass = uic.loadUiType(path + r"\requiredServers.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+ControlerWindowUI, QtBaseClass = uic.loadUiType(os.path.join(path, "DACControlerWindow.ui"))
+Ui_ServerList, QtBaseClass = uic.loadUiType(os.path.join(path, "requiredServers.ui"))
 
 #Not required, but strongly recommended functions used to format numbers in a particular way.
-sys.path.append(sys.path[0]+'\Resources')
+#sys.path.append(sys.path[0]+'\Resources')
 from DEMONSFormat import *
 
 class Window(QtGui.QMainWindow, ControlerWindowUI):
@@ -101,7 +102,7 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
             self.serversList[str(key)] = server
             self.refreshServerIndicator()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def disconnectServer(self, ServerName):
         try:
@@ -114,7 +115,7 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
             self.refreshServerIndicator()
             self.Refreshinterface()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def refreshServerIndicator(self):
         try:
@@ -134,7 +135,7 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
             else:
                 setIndicator(self.pushButton_Servers, 'rgb(161, 0, 0)')
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def Refreshinterface(self):
         self.DetermineEnableConditions()
