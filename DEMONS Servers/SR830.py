@@ -12,13 +12,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# Modified by Sasha Zibrov 2017
+
 """
 ### BEGIN NODE INFO
 [info]
 name = SR830
-version = 2.9.1
-description =
+version = 2.9.0
+description = 
 
 [startup]
 cmdline = %PYTHON% %FILE%
@@ -29,46 +29,35 @@ message = 987654321
 timeout = 20
 ### END NODE INFO
 """
-
-from math import log10
-from numpy import log2
+from labrad.units import V, mV, us, ns, GHz, MHz, Hz, K, deg
+from labrad import units
 from labrad.server import setting
 from labrad.gpib import GPIBManagedServer
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 def getTC(i):
-    """converts from the integer label used by the SR830 to a time in sec"""
+    """converts from the integer label used by the SR830 to a time"""
     if i < 0:
         return getTC(0)
     elif i > 19:
         return getTC(19)
     elif i % 2 == 0:
-        return 10**(-5 + i/2)
+        return 10**(-5 + i/2) * units.s
     else:
-        return 3*10**(-5 + i/2)
+        return 3*10**(-5 + (i-1)/2) * units.s
 
-def getSensitivity(i, mode):
-    """converts form the integer label used by the SR830 to a sensitivity based on the mode"""
+def getSensitivity(i):
+    """converts form the integer label used by the SR830 to a sensitivity"""
     if i < 0:
-        return getSensitivity(0, mode)
+        return getSensitivity(0)
     elif i > 26:
-        return getSensitivity(26, mode)
+        return getSensitvity(26)
     elif i % 3 == 0:
-        if mode == 0 or mode == 1:
-            return 2 * 10**(-9 + i/3)
-        else:
-            return 2 * 10**(-15 + i/3)
+        return 2 * 10**(-9 + i/3)
     elif i % 3 == 1:
-        if mode == 0 or mode == 1:
-            return 5 * 10**(-9 + i/3)
-        else:
-            return 5 * 10**(-15 + i/3)
+        return 5 * 10**(-9 + (i-1)/3)
     else:
-        if mode == 0 or mode == 1:
-            return 10 * 10**(-9 + i/3)
-        else:
-            return 10 * 10**(-15 + i/3)
-    
+        return 1 * 10**(-9 + (i+1)/3)
 
 MODE_DICT = {
     'A': 0,
@@ -76,24 +65,28 @@ MODE_DICT = {
     '1M': 2,
     '100M': 3
 }
-
-def getSensitivityInt(v, mode):
-    ''' converty from real sensitivity to an integer value taken by the sr830'''
-    if (mode == 0 or mode == 1): #Voltage
-        sens = int(round(3*log10(v)))+26
-    else: #Current
-        sens = int(round(3*log10(v)))+44
-    return sens
-
-def getTCInt(t):
-    ''' convert from real time constant values to an integer value taken by the sr830'''
-    timeconstant = int(round(2*log10(t)))+10
-    return timeconstant
-
+def trimReadValue(string):
+    return float(string.rstrip('\\r\\n\'').lstrip('b\'').rstrip('\\n\''))
 
 class SR830(GPIBManagedServer):
     name = 'SR830'
     deviceName = 'Stanford_Research_Systems SR830'
+
+    @inlineCallbacks
+    def inputMode(self, c):
+        """returns the input mode. 0=A, 1=A-B, 2=I(10**6), 3=I(10**8)"""
+        dev = self.selectedDevice(c)
+        mode = yield dev.query('ISRC?')
+        returnValue(int(self.trimReadValue(mode)))
+
+    @inlineCallbacks
+    def outputUnit(self, c):
+        """returns a labrad unit, V or A, for what the main output type is. (R, X, Y)"""
+        mode = yield self.inputMode(c)
+        if mode < 2:
+            returnValue(units.V)
+        else:
+            returnValue(units.A)
 
     @setting(11, 'Input Mode', mode='s', returns='i')
     def input_mode(self, c, mode=None):
@@ -105,11 +98,14 @@ class SR830(GPIBManagedServer):
             if mode not in [0, 1, 2, 3]:
                 raise Exception('Error, mode must be in [0, 1, 2, 3, A, A-B,'
                                 ' 1M, 100M], requested: {}'.format(mode))
+
             yield dev.write('ISRC {}'.format(mode))
         mode = yield dev.query('ISRC?')
-        returnValue(int(mode))
+        returnValue(int(self.trimReadValue(mode)))
 
-    @setting(12, 'Phase', ph=['', 'v'], returns='v: phase')
+    @setting(12, 'Phase',
+             ph=['', 'v[deg]'],
+             returns='v[deg]: phase')
     def phase(self, c, ph=None):
         """Set or get the excitation phase offset.
 
@@ -122,9 +118,9 @@ class SR830(GPIBManagedServer):
         """
         dev = self.selectedDevice(c)
         if ph is not None:
-            yield dev.write('PHAS {}'.format(ph))
+            yield dev.write('PHAS {}'.format(ph['deg']))
         resp = yield dev.query('PHAS?')
-        returnValue(float(resp))
+        returnValue(float(resp)*deg)
 
     @setting(13, 'Reference',
              ref=[': query reference source', 'b: set external (false) or internal (true) reference source'],
@@ -144,23 +140,26 @@ class SR830(GPIBManagedServer):
             yield dev.write('FMOD {}'.format(int(ref)))
         resp = yield dev.query('FMOD?')
         returnValue(bool(int(resp)))
+    def trimReadValue(self,string):
+        return float(string.rstrip('\\r\\n\'').lstrip('b\'').rstrip('\\n\''))
 
-    @setting(14, 'Frequency', f=[': query frequency', 'v: set frequency'], returns='v')
+    @setting(14, 'Frequency', f=[': query frequency', 'v[Hz]: set frequency'], returns='v[Hz]')
     def frequency(self, c, f=None):
         """Set or get the excitation frequency (when source is internal)
 
         Args:
-            f (value): Frequency to set.  If none, then we query the
+            f (value[Hz]): Frequency to set.  If none, then we query the
                 existing frequency
 
         Returns:
             (value[Hz]): The internal excitation frequency.
         """
+
         dev = self.selectedDevice(c)
         if f is not None:
-            yield dev.write('FREQ {}'.format(f))
+            yield dev.write('FREQ {}'.format(f['Hz']))
         resp = yield dev.query('FREQ?')
-        returnValue(float(resp))
+        returnValue(float(self.trimReadValue(resp))*Hz)
 
     @setting(15, 'External Reference Slope', ers=[': query', 'i: set'], returns='i')
     def external_reference_slope(self, c, ers=None):
@@ -182,8 +181,8 @@ class SR830(GPIBManagedServer):
 
     @setting(16, 'Harmonic', h=[': query harmonic', 'i: set harmonic'], returns='i')
     def harmonic(self, c, h=None):
-        """Set or get the harmonic.
-
+        """Set or get the harmonic.  
+        
         Harmonic can be set as high as 19999 but is capped at a frequency of
             102kHz.
 
@@ -200,12 +199,12 @@ class SR830(GPIBManagedServer):
         resp = yield dev.query('HARM?')
         returnValue(int(resp))
 
-    @setting(17, 'Sine Out Amplitude', amp=[': query', 'v: set'], returns='v')
+    @setting(17, 'Sine Out Amplitude', amp=[': query', 'v[V]: set'], returns='v[V]')
     def sine_out_amplitude(self, c, amp=None):
         """ Set or get the amplitude of the excitation sine waveform.
 
         Args:
-            amp (Value): RMS excitation amplitude
+            amp (Value[V]): RMS excitation amplitude
                 Accepts values between .004 and 5.0 Vrms.  This will be
                 coerced to the nearest 0.002 Vrms.
 
@@ -214,11 +213,11 @@ class SR830(GPIBManagedServer):
         """
         dev = self.selectedDevice(c)
         if amp is not None:
-            yield dev.write('SLVL {}'.format(amp))
+            yield dev.write('SLVL {}'.format(amp['V']))
         resp = yield dev.query('SLVL?')
-        returnValue(float(resp))
+        returnValue(float(self.trimReadValue(resp))*V)
 
-    @setting(18, 'Aux Input', n='i', returns='v')
+    @setting(18, 'Aux Input', n='i', returns='v[V]')
     def aux_input(self, c, n):
         """Get the value of the Aux Input channel n (1,2,3,4)
 
@@ -232,9 +231,9 @@ class SR830(GPIBManagedServer):
         if int(n) < 1 or int(n) > 4:
             raise ValueError("n must be 1,2,3, or 4!")
         resp = yield dev.query('OAUX? {}'.format(n))
-        returnValue(float(resp))
+        returnValue(float(resp)*V)
 
-    @setting(19, 'Aux Output', n='i', v=['v'], returns='v')
+    @setting(19, 'Aux Output', n='i', v=['v[V]'], returns='v[V]')
     def aux_output(self, c, n, v=None):
         """Get or set the value of an Aux Output.
 
@@ -252,7 +251,7 @@ class SR830(GPIBManagedServer):
         if v is not None:
             yield dev.write('AUXV {}, {}'.format(n, v))
         resp = yield dev.query('AUXV? {}'.format(n))
-        returnValue(float(resp))
+        returnValue(float(resp)*V)
 
     @setting(21, 'x', returns='v')
     def x(self, c):
@@ -264,7 +263,9 @@ class SR830(GPIBManagedServer):
         """
         dev = self.selectedDevice(c)
         resp = yield dev.query('OUTP? 1')
-        returnValue(float(resp))
+        unit = yield self.outputUnit(c)
+        resp = trimReadValue(resp)
+        returnValue(float(resp) * unit)
 
     @setting(22, 'y', returns='v')
     def y(self, c):
@@ -276,7 +277,9 @@ class SR830(GPIBManagedServer):
         """
         dev = self.selectedDevice(c)
         resp = yield dev.query('OUTP? 2')
-        returnValue(float(resp))
+        unit = yield self.outputUnit(c)
+        resp = trimReadValue(resp)
+        returnValue(float(resp) * unit)
 
     @setting(23, 'r', returns='v')
     def r(self, c):
@@ -288,21 +291,24 @@ class SR830(GPIBManagedServer):
         """
         dev = self.selectedDevice(c)
         resp = yield dev.query('OUTP? 3')
-        returnValue(float(resp) )
+        resp = trimReadValue(resp)
+        unit = yield self.outputUnit(c)
+        returnValue(float(resp) * unit)
 
-    @setting(24, 'theta', returns='v')
+    @setting(24, 'theta', returns='v[deg]')
     def theta(self, c):
         """Query the value of theta: arctan(quadrature-signal/in-phase-signal).
 
         Returns:
-            (Value): The value of theta.
+            (Value[deg]): The value of theta.
         """
         dev = self.selectedDevice(c)
         resp = yield dev.query('OUTP? 4')
-        returnValue(float(resp))
+        resp = trimReadValue(resp)
+        returnValue(float(resp)*deg)
 
-    @setting(30, 'Time Constant', tc='v', returns='v')
-    def time_constant(self, c, tc=None):
+    @setting(30, 'Time Constant', i='i', returns='v[s]')
+    def time_constant(self, c, i=None):
         """Set or get the time constant.
 
         Args:
@@ -314,48 +320,45 @@ class SR830(GPIBManagedServer):
 
         """
         dev = self.selectedDevice(c)
-        if tc is not None:
-            tc = getTCInt(tc)
-            yield dev.write('OFLT {}'.format(tc))
+        if i is not None:
+            yield dev.write('OFLT {}'.format(i))
         resp = yield dev.query("OFLT?")
-        returnValue(getTC(int(resp)))
+        returnValue(getTC(int(self.trimReadValue(resp))))
 
-    @setting(31, 'Sensitivity', sens='v', returns='v')
-    def sensitivity(self, c, sens=None):
+    @setting(31, 'Sensitivity', i='i', returns='v')
+    def sensitivity(self, c, i=None):
         """Set or get the sensitivity.
 
         Args:
-            no input: return the current sensitivity without unit
-            input: set the current sensitivity and return the set sensitivity without unit
+            i (i):  The sensitivity to set.
+                i=0 --> 2 nV/fA; 1-->5nV/fA, 2-->10nV/fA,
+                3-->20nV/fA, ..., 26 --> 1V/uA.
 
         Returns:
-            (Value or ):  The input range (sensitivity).
+            (Value[V] or [uA]):  The input range (sensitivity).
         """
         dev = self.selectedDevice(c)
-        mode = yield self.input_mode(c)
-        if sens is not None:
-            sens = getSensitivityInt(sens, mode)
-            yield dev.write('SENS {}'.format(sens))
+        mode = yield self.inputMode(c)
+        if mode < 2:
+            u = units.V
+        else:
+            u = units.uA
+        if i is not None:
+            yield dev.write('SENS {}'.format(i))
         resp = yield dev.query("SENS?")
-        returnValue(getSensitivity(int(resp), mode))
+        returnValue(getSensitivity(int(self.trimReadValue(resp))) * u)
 
-    @setting(41, 'Sensitivity Up', returns='v')
-    def sensitivity_up(self, c):
+    @setting(41, 'Sensitivity Up',i='v', returns='v')
+    def sensitivity_up(self, c,i):
         """Kicks the sensitivity up a notch."""
         dev = self.selectedDevice(c)
-        sens = yield dev.query("SENS?")
-        sens = getSensitivity(int(sens)+1)
-        sens = yield self.sensitivity(c, sens)
-        returnValue(sens)
+        returnValue((yield self.sensitivity(c, int( self.trimReadValue ((yield dev.query('SENS?')))) + 1)))
 
-    @setting(42, 'Sensitivity Down', returns='v')
-    def sensitivity_down(self, c):
+    @setting(42, 'Sensitivity Down',i='v', returns='v')
+    def sensitivity_down(self, c,i):
         """Turns the sensitivity down a notch."""
         dev = self.selectedDevice(c)
-        sens = yield dev.query("SENS?")
-        sens = getSensitivity(int(sens)-1)
-        sens = yield self.sensitivity(c, sens)
-        returnValue(sens)
+        returnValue((yield self.sensitivity(c, int( self.trimReadValue( (yield dev.query('SENS?')))) - 1)))
 
     @setting(43, 'Auto Sensitivity')
     def auto_sensitivity(self, c):
@@ -363,28 +366,28 @@ class SR830(GPIBManagedServer):
         waittime = yield self.wait_time(c)
         r = yield self.r(c)
         sens = yield self.sensitivity(c)
-        mode = yield self.input_mode(c)
-        previousSens = sens
-
-        while r == 0:
-            sens = getSensitivity(getSensitivityInt(sens, mode)-5)
-            sens = yield self.sensitivity(c, sens)
-            r = yield self.r(c)
-
-        if r/sens < 0.35:
-            sens = getSensitivity(getSensitivityInt(r/0.35, mode))
-            sens = yield self.sensitivity(c, sens)
-            r = yield self.r(c)
-
-        while r/sens > 0.35:
+        while r/sens > 0.95:
+            # print "sensitivity up... ",
             yield self.sensitivity_up(c)
             yield util.wakeupCall(waittime)
             r = yield self.r(c)
             sens = yield self.sensitivity(c)
-            if (sens == previousSens) and (r/sens<=1):
-                break
-            else:
-                previousSens = sens
+        while r/sens < 0.35:
+            # print "sensitivity down... ",
+            yield self.sensitivity_down(c)
+            yield util.wakeupCall(waittime)
+            r = yield self.r(c)
+            sens = yield self.sensitivity(c)
+    @setting(44, 'Time Constant Up',i='v', returns='v')
+    def time_constant_up(self, c,i):
+        """Kicks the TC up a notch."""
+        dev = self.selectedDevice(c)
+        returnValue((yield self.time_constant(c, int( self.trimReadValue ((yield dev.query('OFLT?')))) + 1)))
+    @setting(45, 'Time Constant Down',i='v', returns='v')
+    def time_constant_down(self, c,i):
+        """Kicks the TC up a notch."""
+        dev = self.selectedDevice(c)
+        returnValue((yield self.time_constant(c, int( self.trimReadValue( (yield dev.query('OFLT?')))) - 1)))
 
     @setting(32, 'Auto Gain')
     def auto_gain(self, c):
@@ -395,7 +398,7 @@ class SR830(GPIBManagedServer):
         resp = yield dev.query("*STB? 1")
         while resp != '0':
             resp = yield dev.query("*STB? 1")
-            print "Waiting for auto gain to finish..."
+            print("Waiting for auto gain to finish...")
 
     @setting(33, 'Filter Slope', i='i', returns='i')
     def filter_slope(self, c, i=None):
@@ -408,7 +411,7 @@ class SR830(GPIBManagedServer):
             yield dev.write('OFSL {}'.format(i))
             returnValue(i)
 
-    @setting(34, 'Wait Time', returns='v')
+    @setting(34, 'Wait Time', returns='v[s]')
     def wait_time(self, c):
         """Returns the recommended wait time given current time constant and low-pass filter slope."""
         dev = self.selectedDevice(c)
@@ -417,13 +420,13 @@ class SR830(GPIBManagedServer):
         slope = yield dev.query("OFSL?")
         slope = int(slope)
         if slope == 0:
-            returnValue(5*tc) # recommended 5
+            returnValue(5*tc)
         elif slope == 1:
-            returnValue(7*tc) # 7
+            returnValue(7*tc)
         elif slope == 2:
             returnValue(9*tc)
         else:# slope == 3:
-            returnValue(10*tc) # 10 etc.
+            returnValue(10*tc)
 
     @setting(35, 'Output Overload', returns='b')
     def output_overload(self, c):
@@ -434,19 +437,6 @@ class SR830(GPIBManagedServer):
         bits were read or cleared.  Reading this status bit or sending a *CLS
         command will reset the value of this status bit to False until another
         overload event occurs.
-        """
-        dev = self.selectedDevice(c)
-        resp = yield dev.query("LIAS? 2")
-        returnValue(bool(int(resp)))
-
-    @setting(36, 'Input Overload', returns='b')
-    def input_overload(self, c):
-        """Gets the input overload status bit
-
-        The input overload status bit will return True if voltage inputs are
-        greater than 1.4Vpk (unless removed by AC coupling) or current inputs
-        greater than 10 uA DC or 1.4 uA AC (1MOhm gain) or 100 nA DC or 14 nA AC
-        (100MW gain). Reduce the input signal level.
         """
         dev = self.selectedDevice(c)
         resp = yield dev.query("LIAS? 2")
@@ -561,54 +551,12 @@ class SR830(GPIBManagedServer):
         resp = yield dev.query("SYNC?")
         returnValue(int(resp))
 
-    @setting(41, 'Sample Rate', rate = 'v', returns = 'v')
-    def sample_rate(self, c, rate = None):
-        '''Sets the sampling rate for buffered data acquisition. Only discrete values are accepted of 
-        0.0625 Hz, 0.125 Hz, 0.250 Hz, 0.5 Hz, 1 Hz, 2 Hz, 4 Hz, 8 Hz, 16 Hz, 32 Hz, 64 Hz, 128 Hz, 256 Hz,
-        and 512 Hz. The function will round to the nearest frequency.'''
-        dev = self.selectedDevice(c)
-        if rate is not None:
-            index = int(round(log2(rate/0.0625)))
-            if index < 0:
-                index = 0
-            elif index > 13:
-                index = 13
-            yield dev.write("SRAT {}".format(index))
-        resp = yield dev.query("SRAT?")
-        freq = 0.0625*2**int(resp)
-        returnValue(freq)
-        
-    @setting(42, 'Buffer Mode', mode = 'i', returns = 'i')
-    def buffer_mode(self, c, mode = None):
-        '''Sets the buffer mode for buffered data acquisition. 0 corresponds to 1 shot (stops after the buffer
-        is filled) and 1 corresponds to loop (overwrites earlier values in the buffer if it's filled).'''
-        dev = self.selectedDevice(c)
-        if mode is not None:
-            yield dev.write("SEND {}".format(mode))
-            
-        resp = yield dev.query("SEND?")
-        returnValue(int(resp))
-        
-    @setting(43, 'Clear Buffer')
-    def clear_buffer(self, c):
-        dev = self.selectedDevice(c)
-        yield dev.write("REST")
-        
-    @setting(44, 'Pause Buffer'):
-    def pause_buffer(self, c):
-        dev = self.selectedDevice(c)
-        yield dev.write("PAUS")
-        
-    @setting(45, 'Start Buffer')
-    def start_buffer(self, c):
-        dev = self.selectedDevice(c)
-        yield dev.write("STRT")
-        
 __server__ = SR830()
 
 if __name__ == '__main__':
     from labrad import util
     util.runServer(__server__)
+
 
 
 """Not implemented commands:

@@ -1,0 +1,4 @@
+Setting directory:  ['', 'BF_81']
+2D Info:  {'Plot 1': {'title': 'Plot 1', 'x axis': 'Bg_0', 'x index': 1, 'y axis': 'Tg_0', 'y index': 2, 'z axis': 'Rx', 'z index': 5}}
+1D Info:  {}
+signal:  00014 - GateSweep

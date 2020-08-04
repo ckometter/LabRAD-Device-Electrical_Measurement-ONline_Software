@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>739</width>
-    <height>296</height>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@ background: black;\n}</string>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QPushButton" name="pushButton_FourTerminalGateSweepProbeStation">
+     <widget class="QPushButton" name="pushButton_TransportGateSweep">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -52,14 +52,14 @@ background: black;\n}</string>
        </sizepolicy>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton:pressed#pushButton_FourTerminalGateSweepProbeStation{
+       <string notr="true">QPushButton:pressed#pushButton_TransportGateSweep{
 color: rgb(50,150,255);
 background-color:rgb(10,30,50);
 border: 1px solid rgb(50,150,255);
 border-radius: 5px
 }
 
-QPushButton#pushButton_FourTerminalGateSweepProbeStation{
+QPushButton#pushButton_TransportGateSweep{
 color: rgb(50,150,255);
 background-color:rgb(0,0,0);
 border: 2px solid  rgb(50,150,255);
@@ -67,7 +67,7 @@ border-radius: 5px
 }</string>
       </property>
       <property name="text">
-       <string>Probe Station Screening FourTerminal</string>
+       <string>Transport Gate Sweep</string>
       </property>
      </widget>
     </item>
@@ -204,7 +204,120 @@ border-radius: 5px
       </property>
      </spacer>
     </item>
+    <item row="3" column="0">
+     <spacer name="horizontalSpacer_9">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="2">
+     <spacer name="horizontalSpacer_10">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="3">
+     <spacer name="horizontalSpacer_11">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="5">
+     <spacer name="horizontalSpacer_12">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="pushButton_DataPlotter">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton:pressed#pushButton_DataPlotter{
+color: rgb(50,150,255);
+background-color:rgb(10,30,50);
+border: 2px solid rgb(50,150,255);
+border-radius: 5px
+}
+
+QPushButton#pushButton_DataPlotter{
+color: rgb(50,150,255);
+background-color:rgb(0,0,0);
+border: 2px solid rgb(50,150,255);
+border-radius: 5px
+}
+
+
+</string>
+      </property>
+      <property name="text">
+       <string>Data Plotter</string>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="4">
+     <widget class="QPushButton" name="pushButton_FridgeStatus">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton:pressed#pushButton_FridgeStatus{
+color: rgb(50,150,255);
+background-color:rgb(10,30,50);
+border: 1px solid rgb(50,150,255);
+border-radius: 5px
+}
+
+QPushButton#pushButton_FridgeStatus{
+color: rgb(50,150,255);
+background-color:rgb(0,0,0);
+border: 2px solid  rgb(50,150,255);
+border-radius: 5px
+}
+
+</string>
+      </property>
+      <property name="text">
+       <string>Fridge Status</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
      <widget class="QPushButton" name="pushButton_DACADC_Tracker">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -231,97 +344,7 @@ border-radius: 5px
 </string>
       </property>
       <property name="text">
-       <string>DAC ADC Tracker</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="pushButton_FourTerminalGateSweepSQUID">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton:pressed#pushButton_FourTerminalGateSweepSQUID{
-color: rgb(50,150,255);
-background-color:rgb(10,30,50);
-border: 1px solid rgb(50,150,255);
-border-radius: 5px
-}
-
-QPushButton#pushButton_FourTerminalGateSweepSQUID{
-color: rgb(50,150,255);
-background-color:rgb(0,0,0);
-border: 2px solid  rgb(50,150,255);
-border-radius: 5px
-}
-
-
-</string>
-      </property>
-      <property name="text">
-       <string>Four Terminal Buffered</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="4">
-     <widget class="QPushButton" name="pushButton_DataPlotter">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton:pressed#pushButton_DataPlotter{
-color: rgb(255,150,50);
-background-color:rgb(50,30,10);
-border: 1px solid rgb(255,150,50);
-border-radius: 5px
-}
-
-QPushButton#pushButton_DataPlotter{
-color: rgb(255,150,50);
-background-color:rgb(0,0,0);
-border: 2px solid  rgb(255,150,50);
-border-radius: 5px
-}
-
-
-</string>
-      </property>
-      <property name="text">
-       <string>Data Plotter</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="pushButton_TwoTerminalGateSweepProbeStation">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton:pressed#pushButton_TwoTerminalGateSweepProbeStation{
-color: rgb(50,150,255);
-background-color:rgb(10,30,50);
-border: 1px solid rgb(50,150,255);
-border-radius: 5px
-}
-
-QPushButton#pushButton_TwoTerminalGateSweepProbeStation{
-color: rgb(50,150,255);
-background-color:rgb(0,0,0);
-border: 2px solid  rgb(50,150,255);
-border-radius: 5px
-}</string>
-      </property>
-      <property name="text">
-       <string>Probe Station Screening Two Terminal</string>
+       <string>DAC ADC Controller</string>
       </property>
      </widget>
     </item>

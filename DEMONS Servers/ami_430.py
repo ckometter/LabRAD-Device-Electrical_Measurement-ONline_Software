@@ -29,151 +29,148 @@ timeout = 20
 """
 
 from labrad.server import setting
-from labrad.devices import DeviceServer,DeviceWrapper
+#from labrad.devices import DeviceServer,DeviceWrapper
+from labrad.gpib import GPIBManagedServer
 from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.internet import reactor, defer
 import labrad.units as units
 from labrad.types import Value
+import numpy as np 
+import time
 
-TIMEOUT = Value(5,'s')
-BAUD    = 115200
-STOP_BITS = 1
-BYTESIZE= 8
-RTS = 1
+#TIMEOUT = Value(5,'s')
+#BAUD    = 115200
+#STOP_BITS = 1
+#BYTESIZE= 8
+#RTS = 1
 
-maxRate = 10
+#maxRate = 10
 
-class AMI430Wrapper(DeviceWrapper):
+# class AMI430Wrapper(DeviceWrapper):
 
-    @inlineCallbacks
-    def connect(self, server, port):
-        """Connect to a device."""
-        print 'connecting to "%s" on port "%s"...' % (server.name, port),
-        self.server = server
-        self.ctx = server.context()
-        self.port = port
-        p = self.packet()
-        p.open(port)
-        p.stopbits(STOP_BITS)
-        p.bytesize(BYTESIZE)
-        p.rts(bool(RTS))
-        print 'opened on port "%s"' %self.port
-        p.baudrate(BAUD)
-        p.read()  # clear out the read buffer
-        p.timeout(TIMEOUT)
-        print(" CONNECTED ")
-        yield p.send()
+#     @inlineCallbacks
+#     def connect(self, server, port):
+#         """Connect to a device."""
+#         print('connecting to "%s" on port "%s"...' % (server.name, port))
+
+#         self.server = server
+#         self.ctx = server.context()
+#         self.port = port
+#         p = self.packet()
+#         p.open(port)
+#         p.stopbits(STOP_BITS)
+#         p.bytesize(BYTESIZE)
+#         p.rts(bool(RTS))
+#         print('opened on port "%s"' %self.port)
+#         p.baudrate(BAUD)
+#         p.read()  # clear out the read buffer
+#         p.timeout(TIMEOUT)
+#         print(" CONNECTED ")
+#         yield p.send()
         
-    def packet(self):
-        """Create a packet in our private context."""
-        return self.server.packet(context=self.ctx)
+#     def packet(self):
+#         """Create a packet in our private context."""
+#         return self.server.packet(context=self.ctx)
 
-    def shutdown(self):
-        """Disconnect from the serial port when we shut down."""
-        return self.packet().close().send()
+#     def shutdown(self):
+#         """Disconnect from the serial port when we shut down."""
+#         return self.packet().close().send()
 
-    @inlineCallbacks
-    def write(self, code):
-        """Write a data value to the heat switch."""
-        yield self.packet().write(code).send()
+#     @inlineCallbacks
+#     def write(self, code):
+#         """Write a data value to the heat switch."""
+#         yield self.packet().write(code).send()
 
-    @inlineCallbacks
-    def read(self):
-        p=self.packet()
-        p.read_line()
-        ans=yield p.send()
-        returnValue(ans.read_line)
+#     @inlineCallbacks
+#     def read(self):
+#         p=self.packet()
+#         p.read_line()
+#         ans=yield p.send()
+#         returnValue(ans.read_line)
 
-    @inlineCallbacks
-    def query(self, code):
-        """ Write, then read. """
-        p = self.packet()
-        p.write_line(code)
-        p.read_line()
-        ans = yield p.send()
-        returnValue(ans.read_line)
+#     @inlineCallbacks
+#     def query(self, code):
+#         """ Write, then read. """
+#         p = self.packet()
+#         p.write_line(code)
+#         p.read_line()
+#         ans = yield p.send()
+#         returnValue(ans.read_line)
         
+# ##
 
-class AMI430Server(DeviceServer):
-    name = 'AMI_430'
-    deviceName = 'AMI_430 Programmer'
-    deviceWrapper = AMI430Wrapper
+def trimReadValue(string):
+    return float(string.rstrip('\\r\\n\'').lstrip('b\'').rstrip('\\n\''))
 
-    @inlineCallbacks
-    def initServer(self):
-        print 'loading config info...',
-        self.reg = self.client.registry()
-        yield self.loadConfigInfo()
-        print 'done.'
-        print self.serialLinks
-        yield DeviceServer.initServer(self)
+MAX_RATE = 1.0
 
-    @inlineCallbacks
-    def loadConfigInfo(self):
-        """Load configuration information from the registry."""
-        # reg = self.client.registry
-        # p = reg.packet()
-        # p.cd(['', 'Servers', 'Heat Switch'], True)
-        # p.get('Serial Links', '*(ss)', key='links')
-        # ans = yield p.send()
-        # self.serialLinks = ans['links']
-        reg = self.reg
-        yield reg.cd(['', 'Servers', 'ami_430', 'Links'], True)
-        dirs, keys = yield reg.dir()
-        p = reg.packet()
-        print " created packet"
-        print "printing all the keys",keys
-        if keys:
-            for k in keys:
-                print "k=",k
-                p.get(k, key=k)
-                
-            ans = yield p.send()
-            print "ans=",ans,ans[k]
-            self.serialLinks = dict((k, ans[k]) for k in keys)
-        else:
-            self.serialLinks = dict()
+class AMI430Server(GPIBManagedServer):
+    name = 'AMI 430'
+    deviceName = 'AMERICAN MAGNETICS INC. MODEL 430'
+    #deviceWrapper = AMI430Wrapper
+
+    # @inlineCallbacks
+    # def initServer(self):
+    #     print('loading config info...')
+    #     self.reg = self.client.registry()
+    #     yield self.loadConfigInfo()
+    #     print('done.')
+    #     print(self.serialLinks)
+    #     yield DeviceServer.initServer(self)
+
+    # @inlineCallbacks
+    # def loadConfigInfo(self):
+    #     """Load configuration information from the registry."""
+    #     # reg = self.client.registry
+    #     # p = reg.packet()
+    #     # p.cd(['', 'Servers', 'Heat Switch'], True)
+    #     # p.get('Serial Links', '*(ss)', key='links')
+    #     # ans = yield p.send()
+    #     # self.serialLinks = ans['links']
+    #     reg = self.reg
+    #     yield reg.cd(['', 'Servers', 'ami_430', 'Links'], True)
+    #     dirs, keys = yield reg.dir()
+    #     p = reg.packet()
+    #     print(" created packet")
+    #     print("printing all the keys",keys)
+    #     for k in keys:
+    #         print("k=",k)
+    #         p.get(k, key=k)
+    #     ans = yield p.send()
+    #     print("ans=",ans)
+    #     self.serialLinks = dict((k, ans[k]) for k in keys)
 
 
-        # yield reg.cd(['', 'Servers', 'ami_430', 'Max Rates'], True)
-        # dirs, keys = yield reg.dir()
-        # p = reg.packet()
-        # for k in keys:
-        #     p.get(k, key=k)
+    #     # yield reg.cd(['', 'Servers', 'ami_430', 'Max Rates'], True)
+    #     # dirs, keys = yield reg.dir()
+    #     # p = reg.packet()
+    #     # for k in keys:
+    #     #     p.get(k, key=k)
             
-        # ans = yield p.send()
-        # self.maxRates = dict((k, ans[k]) for k in keys)
+    #     # ans = yield p.send()
+    #     # self.maxRates = dict((k, ans[k]) for k in keys)
 
 
-    @inlineCallbacks
-    def findDevices(self):
-        """Find available devices from list stored in the registry."""
-        devs = []
-        # for name, port in self.serialLinks:
-        # if name not in self.client.servers:
-        # continue
-        # server = self.client[name]
-        # ports = yield server.list_serial_ports()
-        # if port not in ports:
-        # continue
-        # devName = '%s - %s' % (name, port)
-        # devs += [(devName, (server, port))]
-        # returnValue(devs)
-        for name, (serServer, port) in self.serialLinks.items():
-            if serServer not in self.client.servers:
-                continue
-            server = self.client[serServer]
-            print name
-            print server
-            print port
-            ports = yield server.list_serial_ports()
-            print ports
-            if port not in ports:
-                continue
-            devName = '%s - %s' % (serServer, port)
-            devs += [(devName, (server, port))]
+    # @inlineCallbacks
+    # def findDevices(self):
+    #     """Find available devices from list stored in the registry."""
+    #     devs = []
+    #     for name, (serServer, port) in self.serialLinks.items():
+    #         if serServer not in self.client.servers:
+    #             continue
+    #         server = self.client[serServer]
+    #         #print('HELLO')
+    #         print(server)
+    #         print(port)
+    #         ports = yield server.list_serial_ports()
+    #         print(ports)
+    #         if port not in ports:
+    #             continue
+    #         devName = '%s (%s)' % (serServer, port)
+    #         devs += [(devName, (server, port))]
 
-       # devs += [(0,(3,4))]
-        returnValue(devs)
+    #    # devs += [(0,(3,4))]
+    #     returnValue(devs)
 
     @inlineCallbacks
     def get_max_rate(self,dev):
@@ -190,6 +187,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write('*IDN?\r')
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
     @setting(102,returns='s')
@@ -204,6 +202,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("*SYST:ERR?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
     @setting(103,returns='s')
@@ -213,8 +212,7 @@ class AMI430Server(DeviceServer):
         '''
         dev=self.selectedDevice(c)
         yield dev.write("*CLS\r")
-        ans = yield dev.read()
-        returnValue(ans)
+        returnValue('done')
 
     @setting(104,voltage='v[]')
     def conf_volt_lim(self,c,voltage):
@@ -225,7 +223,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("CONF:VOLT:LIM %f\r"%voltage)
 
-    @setting(105,returns='s')
+    @setting(105,returns='v')
     def get_volt_lim(self,c):
         '''
         Returns the ramping Voltage Limit in volts.
@@ -233,6 +231,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("VOLT:LIM?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
     @setting(106,current='v[]')
@@ -243,7 +242,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("CONF:CURR:TARG %f\r"%current)
         
-    @setting(107,returns='s')
+    @setting(107,returns='v')
     def get_curr_targ(self,c):
         '''
         Returns the target current setting in amperes.
@@ -251,7 +250,8 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("CURR:TARG?\r")
         ans = yield dev.read()
-        returnValue(ans)
+        ans = trimReadValue(ans)
+        returnValue(float(ans))
 
     @setting(108,units='v[]')
     def conf_field_units(self,c,units):
@@ -269,10 +269,13 @@ class AMI430Server(DeviceServer):
         Returns "0" for field values displayed/specified in terms of kilogauss, or "1"
         for tesla.
         '''
+        key = {0: 'kG', 1: 'T'}
         dev=self.selectedDevice(c)
         yield dev.write("FIELD:UNITS?\r")
         ans = yield dev.read()
-        returnValue(ans)
+        ans = int(trimReadValue(ans))
+
+        returnValue(key[ans])
 
     @setting(110,field='v[]')
     def conf_field_targ(self,c,field):
@@ -285,15 +288,16 @@ class AMI430Server(DeviceServer):
         yield dev.write("CONF:FIELD:TARG %f\r"%field)
 
 
-    @setting(111,returns='s')
+    @setting(111,returns='v')
     def get_field_targ(self,c):
         '''
-        Returns the target current setting in amperes.
+        Returns the target field setting in amperes.
         '''
         dev=self.selectedDevice(c)
         yield dev.write("FIELD:TARG?\r")
         ans = yield dev.read()
-        returnValue(ans)
+        ans = trimReadValue(ans)
+        returnValue(float(ans))
 
     @setting(112,nSegments='i')
     def conf_ramp_rate_seg(self,c,nSegments):
@@ -304,7 +308,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("CONF:RAMP:RATE:SEG %u\r"%nSegments)
 
-    @setting(113,returns='s')
+    @setting(113,returns='i')
     def get_ramp_rate_seg(self,c):
         '''
         Returns the number of ramp segments.
@@ -312,7 +316,8 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("RAMP:RATE:SEG?\r")
         ans = yield dev.read()
-        returnValue(ans)
+        ans = trimReadValue(ans)
+        returnValue(int(ans))
 
     @setting(114,units='i')
     def conf_ramp_rate_units(self,c,units):
@@ -331,10 +336,12 @@ class AMI430Server(DeviceServer):
         Returns "0" for ramp rates displayed/specified in terms of seconds, or "1"
         for minutes.
         '''
+        key = {0: 's',1: 'min'}
         dev=self.selectedDevice(c)
         yield dev.write("RAMP:RATE:UNITS?\r")
         ans = yield dev.read()
-        returnValue(ans)
+        ans = int(trimReadValue(ans))
+        returnValue(key[ans])
 
     @setting(116,segment='i', rate = 'v[]', upper_bound = 'v[]')
     def conf_ramp_rate_curr(self,c,segment,rate,upper_bound):
@@ -349,7 +356,7 @@ class AMI430Server(DeviceServer):
         rate = min(rate,maxRate)
         yield dev.write("CONF:RAMP:RATE:CURR %u,%f,%f\r"%(segment,rate,upper_bound))
 
-    @setting(117,segment='i',returns='s')
+    @setting(117,segment='i',returns='v')
     def get_ramp_rate_curr(self,c,segment):
         '''
         Returns the ramp rate setting for the specified segment (values of 1
@@ -361,6 +368,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("RAMP:RATE:CURR:%u?\r"%segment)
         ans = yield dev.read()
+        trimReadValue(ans)
         returnValue(ans)
 
     @setting(118,segment='i', rate = 'v[]', upper_bound = 'v[]')
@@ -375,16 +383,16 @@ class AMI430Server(DeviceServer):
         otherwise, an error is generated.
         '''
         dev=self.selectedDevice(c)
-        rate = min(rate,maxRate)
+        rate = min(rate,MAX_RATE)
         yield dev.write("CONF:RAMP:RATE:FIELD %u,%f,%f\r"%(segment,rate,upper_bound))
 
-    @setting(119,segment='i',returns='s')
+    @setting(119,segment='i',returns='v')
     def get_ramp_rate_field(self,c,segment):
         '''
         Returns the ramp rate setting for the specified segment (values of 1
         through the defined number of ramp segments are valid) in units of
         kilogauss/second or minute, or tesla/second or minute (per the selected
-        field units and ramp rate units) and the current upper bound for that
+        field units and ramp rate units) and t current upper bound for that
         range in kilogauss or tesla (per the selected field units). This command
         requires that a coil constant be defined; otherwise, an error is generated.
         The two return values are separated by a comma.
@@ -392,9 +400,11 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("RAMP:RATE:FIELD:%u?\r"%segment)
         ans = yield dev.read()
-        returnValue(ans)
+        ans = ans.rstrip('\\r\\n\'').lstrip('b\'').rstrip('\\n\'')
+        ramprate,upper_bound = ans.split(',')
+        returnValue(ramprate)
 
-    @setting(120,returns='s')
+    @setting(120,returns='v')
     def get_volt_mag(self,c):
         '''
         Returns the magnet voltage in volts. Requires voltage taps to be installed
@@ -403,9 +413,10 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("VOLT:MAG?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
-    @setting(121,returns='s')
+    @setting(121,returns='v')
     def get_volt_supp(self,c):
         '''
         Returns the power supply voltage commanded by the Model 430
@@ -414,9 +425,10 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("VOLT:SUPP?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
-    @setting(122,returns='s')
+    @setting(122,returns='v')
     def get_curr_mag(self,c):
         '''
         Returns the current flowing in the magnet in amperes, expressed as a
@@ -427,9 +439,10 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("CURR:MAG?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
-    @setting(123,returns='s')
+    @setting(123,returns='v')
     def get_curr_supp(self,c):
         '''
         Returns the measured power supply current in amperes.
@@ -437,9 +450,10 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("CURR:SUPP?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
-    @setting(124,returns='s')
+    @setting(124,returns='v')
     def get_field_mag(self,c):
         '''
         Returns the calculated field in kilogauss or tesla, per the selected field
@@ -450,8 +464,9 @@ class AMI430Server(DeviceServer):
         entered.
         '''
         dev=self.selectedDevice(c)
-        yield dev.write("FIELD:MAG?\r")
-        ans = yield dev.read()
+        ans = yield dev.query("FIELD:MAG?\r")
+        #ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
     @setting(125,returns='s')
@@ -464,6 +479,7 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("IND?\r")
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
     @setting(126,units='i')
@@ -622,8 +638,9 @@ class AMI430Server(DeviceServer):
         10 Cooling persistent switch     
         '''
         dev=self.selectedDevice(c)
-        yield dev.write("STATE?\r")
-        ans = yield dev.read()
+        ans = yield dev.query("STATE?")
+        #ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(int(ans))
 
     @setting(140,name='s')
@@ -643,14 +660,92 @@ class AMI430Server(DeviceServer):
         dev=self.selectedDevice(c)
         yield dev.write("IPNAME?\r"%segment)
         ans = yield dev.read()
+        ans = trimReadValue(ans)
         returnValue(ans)
 
+    @setting(142, returns='i')
+    def get_pswitch(self,c):
+        '''
+        Returns a “0” indicating the switch heater is OFF, or a “1” indicating the
+        persistent switch heater is ON
+        '''
+        dev = self.selectedDevice(c)
+        yield dev.write("PSwitch?\r")
+        ans = yield dev.read()
+        ans = trimReadValue(ans)
+        returnValue(int(ans))
+
+    @setting(143, returns = 'i')
+    def get_persistent(self,c):
+        '''
+        Returns the state of the "MAGNET IN PERSISTENT MODE" LED on the
+        front panel of the Model 430: ‘0” if the LED is OFF; “1” if the LED is ON.
+        '''
+        dev = self.selectedDevice(c)
+        yield dev.write("PERSISTENT?\r")
+        ans = yield dev.read()
+        ans = trimReadValue(ans)
+        returnValue(int(ans))
+
+    @setting(144,returns = 'i')
+    def get_quench(self,c):
+        '''
+        Queries the quench state. If a “0” is returned, no quench condition exists.
+        If a “1” is returned, a quench detect has occurred and is still in effect.
+        '''
+        dev = self.selectedDevice(c)
+        yield dev.write("QUench?\r")
+        ans = yield dev.read()
+        ans = trimReadValue(ans)
+        returnValue(int(ans))
+
+    @setting(145, returns = 'i')
+    def persistent_switch_on(self,c):
+        '''
+        Turns on persistent switch, waits until in holding to return
+        '''
+        dev = self.selectedDevice(c)
+        yield dev.write("PSwitch 1")
+        st = yield self.state(c)
+        while st != 2 and st != 3:
+            st =  yield self.state(c)
+        returnValue(1)
+
+    @setting(146, returns = 'i')
+    def persistent_switch_off(self,c):
+        '''
+        Turns off persistent switch, waits until in holding to return
+        '''
+        dev = self.selectedDevice(c)
+        yield dev.write("PSwitch 0")
+        st = yield self.state(c)
+        while st != 2 and st != 3:
+            st =  yield self.state(c)
+        returnValue(1)
+
+    @setting(147, returns = 'i')
+    def opcq(self,c):
+        dev = self.selectedDevice(c)
+        ans = yield dev.query('*OPC?')
+        ans = trimReadValue(ans)
+        returnValue(int(ans))
+
+    @setting(148,returns = 'i')
+    def persistent(self,c):
+        '''
+        Returns 0 if magnet is not in persistent mode, 1 if it is
+        '''
+        dev = self.selectedDevice(c)
+        ans = yield dev.query('PERS?')
+        ans = trimReadValue(ans)
+        returnValue(int(ans))
 
     @setting(9001,v='v')
     def do_nothing(self,c,v):
         pass
     @setting(9002)
     def read(self,c):
+        print('a')
         dev=self.selectedDevice(c)
         ret=yield dev.read()
         returnValue(ret)

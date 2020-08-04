@@ -1,10 +1,11 @@
 from __future__ import division
 import sys
+import os
 import twisted
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
-from PyQt4 import Qt, QtGui, QtCore, uic
+from PyQt5 import Qt, QtGui, QtCore, uic
 import numpy as np
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
@@ -12,12 +13,12 @@ from scipy.signal import detrend
 #importing a bunch of stuff
 
 
-path = sys.path[0] + r"\DAC Controler"
-ControlerWindowUI, QtBaseClass = uic.loadUiType(path + r"\DACControlerWindow.ui")
-Ui_ServerList, QtBaseClass = uic.loadUiType(path + r"\requiredServers.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+ControlerWindowUI, QtBaseClass = uic.loadUiType(os.path.join(path, "DACControlerWindow.ui"))
+Ui_ServerList, QtBaseClass = uic.loadUiType(os.path.join(path, "requiredServers.ui"))
 
 #Not required, but strongly recommended functions used to format numbers in a particular way.
-sys.path.append(sys.path[0]+'\Resources')
+#sys.path.append(sys.path[0]+'\Resources')
 from DEMONSFormat import *
 
 class Window(QtGui.QMainWindow, ControlerWindowUI):
@@ -50,15 +51,11 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
         self.targetnumber = {
             'Output1': 0.0,
             'Output2': 0.0,
-            'Output3': 0.0,
-            'Output4': 0.0
         }
 
         self.lineEdit = {
             'Output1': self.lineEdit_TargetNumber_1,
             'Output2': self.lineEdit_TargetNumber_2,
-            'Output3': self.lineEdit_TargetNumber_3,
-            'Output4': self.lineEdit_TargetNumber_4
         }
 
         for key in self.lineEdit:
@@ -71,25 +68,20 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
         self.comboBox_DAQ_SelectDevice.currentIndexChanged.connect(lambda: SelectDevice(self.DeviceList, 'DataAquisition_Device', str(self.DeviceList['DataAquisition_Device']['ComboBoxDevice'].currentText()), self.Refreshinterface))
         self.lineEdit_TargetNumber_1.editingFinished.connect(lambda: UpdateLineEdit_Bound(self.targetnumber, 'Output1', self.lineEdit, [-10.0, 10.0]))
         self.lineEdit_TargetNumber_2.editingFinished.connect(lambda: UpdateLineEdit_Bound(self.targetnumber, 'Output2', self.lineEdit, [-10.0, 10.0]))
-        self.lineEdit_TargetNumber_3.editingFinished.connect(lambda: UpdateLineEdit_Bound(self.targetnumber, 'Output3', self.lineEdit, [-10.0, 10.0]))
-        self.lineEdit_TargetNumber_4.editingFinished.connect(lambda: UpdateLineEdit_Bound(self.targetnumber, 'Output4', self.lineEdit, [-10.0, 10.0]))
 
         self.pushButton_SET_1.clicked.connect(lambda: Set_DAC(self.DeviceList['DataAquisition_Device']['DeviceObject'], 0, self.targetnumber['Output1']))
         self.pushButton_SET_2.clicked.connect(lambda: Set_DAC(self.DeviceList['DataAquisition_Device']['DeviceObject'], 1, self.targetnumber['Output2']))
-        self.pushButton_SET_3.clicked.connect(lambda: Set_DAC(self.DeviceList['DataAquisition_Device']['DeviceObject'], 2, self.targetnumber['Output3']))
-        self.pushButton_SET_4.clicked.connect(lambda: Set_DAC(self.DeviceList['DataAquisition_Device']['DeviceObject'], 3, self.targetnumber['Output4']))
 
         self.pushButton_Read_1.clicked.connect(lambda: Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 0, self.label_ADC_1))
         self.pushButton_Read_2.clicked.connect(lambda: Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 1, self.label_ADC_2))
         self.pushButton_Read_3.clicked.connect(lambda: Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 2, self.label_ADC_3))
         self.pushButton_Read_4.clicked.connect(lambda: Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 3, self.label_ADC_4))
 
+        self.pushButton_ReadAll.clicked.connect(lambda: self.ReadAll())
     def DetermineEnableConditions(self):
         self.ButtonsCondition={
             self.pushButton_SET_1: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
             self.pushButton_SET_2: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
-            self.pushButton_SET_3: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
-            self.pushButton_SET_4: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
             self.pushButton_Read_1: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
             self.pushButton_Read_2: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
             self.pushButton_Read_3: not self.DeviceList['DataAquisition_Device']['DeviceObject'] == False,
@@ -101,20 +93,20 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
             self.serversList[str(key)] = server
             self.refreshServerIndicator()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
-
+            print('Error:', inst, ' on line: ', sys.exc_info()[2].tb_lineno)
+            print('DACControler')
     def disconnectServer(self, ServerName):
         try:
             self.serversList[str(ServerName)] = False
 
-            for key, DevicePropertyList in self.DeviceList.iteritems():
+            for key, DevicePropertyList in self.DeviceList.items():
                 if str(ServerName) == str(DevicePropertyList['ComboBoxServer'].currentText()):
                     DevicePropertyList['ServerObject'] = False
                     DevicePropertyList['DeviceObject'] = False
             self.refreshServerIndicator()
             self.Refreshinterface()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_info()[2].tb_lineno)
 
     def refreshServerIndicator(self):
         try:
@@ -127,20 +119,20 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
             if flag:
                 setIndicator(self.pushButton_Servers, 'rgb(0, 170, 0)')
 
-                for key, DevicePropertyList in self.DeviceList.iteritems():#Reconstruct all combobox when all servers are connected
+                for key, DevicePropertyList in self.DeviceList.items():#Reconstruct all combobox when all servers are connected
                     ReconstructComboBox(DevicePropertyList['ComboBoxServer'], DevicePropertyList['ServerNeeded'])
 
                 self.Refreshinterface()
             else:
                 setIndicator(self.pushButton_Servers, 'rgb(161, 0, 0)')
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_info()[2].tb_lineno)
 
     def Refreshinterface(self):
         self.DetermineEnableConditions()
         RefreshButtonStatus(self.ButtonsCondition)
 
-        for key, DevicePropertyList in self.DeviceList.iteritems():
+        for key, DevicePropertyList in self.DeviceList.items():
             RefreshIndicator(DevicePropertyList['ServerIndicator'], DevicePropertyList['ServerObject'])
             RefreshIndicator(DevicePropertyList['DeviceIndicator'], DevicePropertyList['DeviceObject'])
             
@@ -150,7 +142,16 @@ class Window(QtGui.QMainWindow, ControlerWindowUI):
     def showServersList(self):
         serList = serversList(self.reactor, self)
         serList.exec_()
-        
+    
+    def ReadAll(self):
+        Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 0, self.label_ADC_1)
+        Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 1, self.label_ADC_2)
+        Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 2, self.label_ADC_3)
+        Read_ADC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 3, self.label_ADC_4)
+
+        Read_DAC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 0, self.label_DAC0)
+        Read_DAC_SetLabel(self.DeviceList['DataAquisition_Device']['DeviceObject'], 1, self.label_DAC1)
+
 class serversList(QtGui.QDialog, Ui_ServerList):
     def __init__(self, reactor, parent = None):
         super(serversList, self).__init__(parent)

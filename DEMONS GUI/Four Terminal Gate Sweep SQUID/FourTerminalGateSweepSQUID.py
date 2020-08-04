@@ -1,11 +1,12 @@
 from __future__ import division
 import sys
+import os
 import twisted
-from PyQt4 import QtCore, QtGui, QtTest, uic
+from PyQt5 import QtCore, QtGui, QtTest, uic
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
 import numpy as np
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
@@ -13,24 +14,24 @@ from scipy.signal import detrend
 #importing a bunch of stuff
 
 
-path = sys.path[0] + r"\Four Terminal Gate Sweep SQUID"
-sys.path.append(path + r'\FourTerminalGateSweepSQUIDSetting')
-sys.path.append(path + r'\MagneticFieldExpansionPack')
-sys.path.append(path + r'\HysterisisExpansionPack')
-sys.path.append(path + r'\GateHysteresisExpansionpack')
+path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(path, 'FourTerminalGateSweepSQUIDSetting'))
+sys.path.append(os.path.join(path, 'MagneticFieldExpansionPack'))
+sys.path.append(os.path.join(path, 'HysterisisExpansionPack'))
+sys.path.append(os.path.join(path, 'GateHysteresisExpansionpack'))
 
 import FourTerminalGateSweepSQUIDSetting
 import MagnetExtension
 import HysteresisExtension
 import GateHysteresisExtension
 
-FourTerminalGateSweepSQUIDWindowUI, QtBaseClass = uic.loadUiType(path + r"\FourTerminalGateSweepSQUIDWindow.ui")
-Ui_ServerList, QtBaseClass = uic.loadUiType(path + r"\requiredServers.ui")
+FourTerminalGateSweepSQUIDWindowUI, QtBaseClass = uic.loadUiType(os.path.join(path, "FourTerminalGateSweepSQUIDWindow.ui"))
+Ui_ServerList, QtBaseClass = uic.loadUiType(os.path.join(path, "requiredServers.ui"))
 
-#Not required, but strongly recommended functions used to format numbers in a particular way.
-sys.path.append(sys.path[0]+'\Resources')
+# Not required, but strongly recommended functions used to format numbers in a particular way.
+# sys.path.append(sys.path[0]+'\Resources')
+
 from DEMONSFormat import *
-
 class Window(QtGui.QMainWindow, FourTerminalGateSweepSQUIDWindowUI):
     def __init__(self, reactor, DEMONS, UpperLevel, parent=None):
         super(Window, self).__init__(parent)
@@ -361,7 +362,7 @@ class Window(QtGui.QMainWindow, FourTerminalGateSweepSQUIDWindowUI):
             yield self.FinishSweep(EndVoltage)
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     @inlineCallbacks
     def FinishSweep(self, currentvoltage):
@@ -374,17 +375,17 @@ class Window(QtGui.QMainWindow, FourTerminalGateSweepSQUIDWindowUI):
             saveDataToSessionFolder(self.winId(), self.sessionFolder, str(self.lineEdit_ImageNumber.text()) + ' - ' + 'Four Terminal SQUID ' + self.Parameter['DeviceName'])
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def connectServer(self, key, server):
         try:
             self.serversList[str(key)] = server
-            for name, DevicePropertyList in self.DeviceList.iteritems():#Reconstruct all combobox when all servers are connected
+            for name, DevicePropertyList in self.DeviceList.items():#Reconstruct all combobox when all servers are connected
                 if key in DevicePropertyList['ServerNeeded']:
                     ReconstructComboBox(DevicePropertyList['ComboBoxServer'], DevicePropertyList['ServerNeeded'])
             self.refreshServerIndicator()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     '''
     When a server is disconnected, look up which device use the server and disconnect it
@@ -392,14 +393,14 @@ class Window(QtGui.QMainWindow, FourTerminalGateSweepSQUIDWindowUI):
     def disconnectServer(self, ServerName):
         try:
             self.serversList[str(ServerName)] = False
-            for key, DevicePropertyList in self.DeviceList.iteritems():
+            for key, DevicePropertyList in self.DeviceList.items():
                 if str(ServerName) == str(DevicePropertyList['ComboBoxServer'].currentText()):
                     DevicePropertyList['ServerObject'] = False
                     DevicePropertyList['DeviceObject'] = False
             self.refreshServerIndicator()
             self.Refreshinterface()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def refreshServerIndicator(self):
         try:
@@ -431,13 +432,13 @@ class Window(QtGui.QMainWindow, FourTerminalGateSweepSQUIDWindowUI):
                 setIndicator(self.GateHysteresisWindow.pushButton_Servers, 'rgb(161, 0, 0)')
                 
         except Exception as inst:
-            print 'Error: refreshServerIndicator', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error: refreshServerIndicator', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def Refreshinterface(self):
         self.DetermineEnableConditions()
         RefreshButtonStatus(self.ButtonsCondition)
 
-        for key, DevicePropertyList in self.DeviceList.iteritems():
+        for key, DevicePropertyList in self.DeviceList.items():
             RefreshIndicator(DevicePropertyList['ServerIndicator'], DevicePropertyList['ServerObject'])
             RefreshIndicator(DevicePropertyList['DeviceIndicator'], DevicePropertyList['DeviceObject'])
 
