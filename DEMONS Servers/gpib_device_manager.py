@@ -49,7 +49,7 @@ UNKNOWN = '<unknown>'
 def parseIDNResponse(s):
     """Parse the response from *IDN? to get mfr and model info."""
     mfr, model, ver, rev = s.split(',')
-    return mfr.strip() + ' ' + model.strip()
+    return mfr.strip().strip('b\'').strip('\'')+ ' ' + model.strip().strip('b\'')
 
 class GPIBDeviceManager(LabradServer):
     """Manages autodetection and identification of GPIB devices.
@@ -74,8 +74,11 @@ class GPIBDeviceManager(LabradServer):
         self.identLock = DeferredLock()
         
         # named messages are sent with source ID first, which we ignore
-        connect_func = lambda c, (s, payload): self.gpib_device_connect(*payload)
-        disconnect_func = lambda c, (s, payload): self.gpib_device_disconnect(*payload)
+        #connect_func = lambda c, (s, payload): self.gpib_device_connect(*payload)
+        #disconnect_func = lambda c, (s, payload): self.gpib_device_disconnect(*payload)
+        connect_func = lambda c, d: self.gpib_device_connect(*d[1])
+        disconnect_func = lambda c, d: self.gpib_device_disconnect(*d[1])
+
         mgr = self.client.manager
         self._cxn.addListener(connect_func, source=mgr.ID, ID=10)
         self._cxn.addListener(disconnect_func, source=mgr.ID, ID=11)
@@ -93,20 +96,20 @@ class GPIBDeviceManager(LabradServer):
                         (('List Devices' in s.settings) or \
                          ('list_devices' in s.settings))]
         serverNames = [s.name for s in servers]
-        print 'Pinging servers:', serverNames
+        print('Pinging servers:', serverNames)
         resp = yield DeferredList([s.list_devices() for s in servers])
         for serverName, (success, addrs) in zip(serverNames, resp):
             if not success:
-                print 'Failed to get device list for:', serverName
+                print('Failed to get device list for:', serverName)
             else:
-                print 'Server %s has devices: %s' % (serverName, addrs)
+                print('Server %s has devices: %s' % (serverName, addrs))
                 for addr in addrs:
                     self.gpib_device_connect(serverName, addr)
 
     @inlineCallbacks
     def gpib_device_connect(self, gpibBusServer, channel):
         """Handle messages when devices connect."""
-        print 'Device Connect:', gpibBusServer, channel
+        print('Device Connect:', gpibBusServer, channel)
         if (gpibBusServer, channel) in self.knownDevices:
             return
         device, idnResult = yield self.lookupDeviceName(gpibBusServer, channel)
@@ -119,7 +122,7 @@ class GPIBDeviceManager(LabradServer):
     
     def gpib_device_disconnect(self, server, channel):
         """Handle messages when devices connect."""
-        print 'Device Disconnect:', server, channel
+        print('Device Disconnect:', server, channel)
         if (server, channel) not in self.knownDevices:
             return
         device, idnResult = self.knownDevices[server, channel]
@@ -136,16 +139,17 @@ class GPIBDeviceManager(LabradServer):
         to the identification query.  If the response cannot be parsed
         or the query fails, the name will be listed as '<unknown>'.
         """
-        p = self.client.servers[server].packet()
-        p.address(channel).timeout(Value(1,'s')).write('*CLS').write('*IDN?').read()
-        print 'Sending *IDN? to', server, channel
-        resp = None
-        try:
-            resp = (yield p.send()).read
-            name = parseIDNResponse(resp)
-        except Exception, e:
-            print 'Error sending *IDN? to', server, channel + ':', e
-            name = UNKNOWN
+        for k in range(0,2):
+            p = self.client.servers[server].packet()
+            p.address(channel).timeout(Value(1,'s')).write('*CLS').write('*IDN?').read()
+            print('Sending *IDN? to', server, channel)
+            resp = None
+            try:
+                resp = (yield p.send()).read
+                name = parseIDNResponse(resp)
+            except Exception as e:
+                print('Error sending *IDN? to', server, channel + ':', e)
+                name = UNKNOWN
         returnValue((name, resp))
 
     def identifyDevice(self, server, channel, idn):
@@ -189,19 +193,19 @@ class GPIBDeviceManager(LabradServer):
             #yield self.client.refresh()
             s = self.client[identifier]
             setting, context = self.identFunctions[identifier]
-            print 'Trying to identify device', server, channel,
-            print 'on server', identifier,
-            print 'with *IDN?:', repr(idn)
+            print('Trying to identify device', server, channel)
+            print('on server', identifier)
+            print('with *IDN?:', repr(idn))
             if idn is None:
                 resp = yield s[setting](server, channel, context=context)
             else:
                 resp = yield s[setting](server, channel, idn, context=context)
             if resp is not None:
                 data = (identifier, server, channel, resp)
-                print 'Server %s identified device %s %s as "%s"' % data
+                print('Server %s identified device %s %s as "%s"' % data)
                 returnValue(resp)
-        except Exception, e:
-            print 'Error during ident:', str(e)
+        except Exception as e:
+            print('Error during ident:', str(e))
     
     @setting(1, 'Register Server',
              devices=['s', '*s'], messageID='w',
@@ -274,7 +278,7 @@ class GPIBDeviceManager(LabradServer):
         """Notify all registered servers about a device status change."""
         for s in self.deviceServers[device]:
             rec = s['messageID'], (device, server, channel, isConnected)
-            print 'Sending message:', s['target'], s['context'], [rec]
+            print('Sending message:', s['target'], s['context'], [rec])
             self.client._sendMessage(s['target'], [rec], context=s['context'])
 
     def serverConnected(self, ID, name):
@@ -298,7 +302,7 @@ class GPIBDeviceManager(LabradServer):
     
     def expireContext(self, c):
         """Stop sending notifications when a context expires."""
-        print 'Expiring context:', c.ID
+        print('Expiring context:', c.ID)
         # device servers
         deletions = []
         for device, servers in list(self.deviceServers.items()):

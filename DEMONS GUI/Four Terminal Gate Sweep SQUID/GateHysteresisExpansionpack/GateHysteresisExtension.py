@@ -1,11 +1,12 @@
 from __future__ import division
 import sys
+import os
 import twisted
-from PyQt4 import QtCore, QtGui, QtTest, uic
+from PyQt5 import QtCore, QtGui, QtTest, uic
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
 import numpy as np
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
@@ -14,9 +15,9 @@ from scipy.signal import detrend
 
 from DEMONSFormat import *
 
-path = sys.path[0] + r"\Four Terminal Gate Sweep SQUID\GateHysteresisExpansionpack"
-Ui_GateHysteresisWindow, QtBaseClass = uic.loadUiType(path + r"\GateHysteresisExtensionWindow.ui")
-Ui_ServerList, QtBaseClass = uic.loadUiType(path + r"\requiredServers.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+Ui_GateHysteresisWindow, QtBaseClass = uic.loadUiType(os.path.join(path, "GateHysteresisExtensionWindow.ui"))
+Ui_ServerList, QtBaseClass = uic.loadUiType(os.path.join(path, "requiredServers.ui"))
 
 class GateHysteresis(QtGui.QMainWindow, Ui_GateHysteresisWindow):
     def __init__(self, reactor, UpperLevel, parent = None):
@@ -429,7 +430,7 @@ class GateHysteresis(QtGui.QMainWindow, Ui_GateHysteresisWindow):
                 
                 for FieldIndex in range(FieldSteps):
                     if self.UpperLevel.DEMONS.Scanning_Flag == False:
-                        print 'Abort the Sweep'
+                        print('Abort the Sweep')
                         yield self.FinishSweep()
                         break
                             
@@ -453,7 +454,7 @@ class GateHysteresis(QtGui.QMainWindow, Ui_GateHysteresisWindow):
                     
                 for FieldIndex in reversed(range(FieldSteps)):
                     if self.UpperLevel.DEMONS.Scanning_Flag == False:
-                        print 'Abort the Sweep'
+                        print('Abort the Sweep')
                         yield self.FinishSweep()
                         break
                     
@@ -484,7 +485,7 @@ class GateHysteresis(QtGui.QMainWindow, Ui_GateHysteresisWindow):
 
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     @inlineCallbacks
     def FinishSweep(self):
@@ -500,7 +501,7 @@ class GateHysteresis(QtGui.QMainWindow, Ui_GateHysteresisWindow):
             saveDataToSessionFolder(self.UpperLevel.winId(), self.UpperLevel.sessionFolder, str(self.UpperLevel.lineEdit_ImageNumber.text()) + ' - ' + 'Four Terminal ' + self.UpperLevel.Parameter['DeviceName'])
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def moveDefault(self):
         self.move(200,0)

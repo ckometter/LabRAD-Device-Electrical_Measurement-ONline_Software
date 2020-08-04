@@ -17,7 +17,7 @@
 ### BEGIN NODE INFO
 [info]
 name = SIM900 
-version = 1.0
+version = 1.0.1
 description = SIM 900 Mainframe with SIM 921 AC Resistance Bridge and SIM 928 Isolated Voltage Source
 [startup]
 cmdline = %PYTHON% %FILE%
@@ -346,6 +346,48 @@ class SIM900Server(DeviceServer):
     def ACRB_reset(self,c,channel):
         dev=self.selectedDevice(c)
         yield dev.write('SNDT %s,"*RST"\r'%channel)
+
+    @setting(401, channel='i', returns = 's')
+    def Channel_IDN(self, c, channel):
+        '''
+        Send *IDN? to channel
+        '''
+        dev=self.selectedDevice(c)
+        yield dev.write('CONN %s,"cometzir"\r'%channel)
+        ans=yield dev.query('*IDN?\r')
+        yield dev.write('cometzir\r')
+        returnValue(str(ans))
+
+    @setting(402, channel='i', config = 'i', returns = 'i')
+    def Multiplexer_SetConfig(self, c, channel, config):
+        '''
+        Set Configuratyion of Multiplexer
+        channel: The slot of SIM925 in SIM900
+        config: desired channel
+        '''
+        dev=self.selectedDevice(c)
+        yield dev.write('SNDT %s,"CHAN %s"\r'%(channel, config))
+        yield dev.write('CONN %s,"cometzir"\r'%channel)
+        ans=yield dev.query('CHAN?\r')
+        yield dev.write('cometzir\r')
+        returnValue(int(ans))
+
+    @setting(403, channel='i', config = 'i', returns = '')
+    def Multiplexer_SetConfig_Fast(self, c, channel, config):
+        '''
+        Set Configuratyion of Multiplexer without query the value being set.
+        channel: The slot of SIM925 in SIM900
+        config: desired channel
+        
+        CH1:
+        I+: A, I-: B, V+: C, V-: D
+        CH5:
+        I+: C, I-: D, V+: A, V-: B        
+        
+        The command has a latency  of roughly 20ms, the transient of the switch is roughly 200us.
+        '''
+        dev=self.selectedDevice(c)
+        yield dev.write('SNDT %s,"CHAN %s"\r'%(channel, config))
 
 __server__ = SIM900Server()
 

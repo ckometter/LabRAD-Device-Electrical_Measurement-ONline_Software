@@ -1,18 +1,19 @@
 import sys
+import os
 import twisted
-from PyQt4 import QtCore, QtGui, QtTest, uic
+from PyQt5 import QtCore, QtGui, QtTest, uic
 from twisted.internet.defer import inlineCallbacks, Deferred
 import numpy as np
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
 
 from DEMONSFormat import *
 
-path = sys.path[0] + r"\Four Terminal Gate Sweep SQUID\FourTerminalGateSweepSQUIDSetting"
-Ui_Setting, QtBaseClass = uic.loadUiType(path + r"\FourTerminalGateSweepSQUIDSettingWindow.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+Ui_Setting, QtBaseClass = uic.loadUiType(os.path.join(path, "FourTerminalGateSweepSQUIDSettingWindow.ui"))
 
 class Setting(QtGui.QMainWindow, Ui_Setting):
     def __init__(self, reactor, parent = None):

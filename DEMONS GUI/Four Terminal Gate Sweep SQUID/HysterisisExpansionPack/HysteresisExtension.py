@@ -1,11 +1,12 @@
 from __future__ import division
 import sys
+import os
 import twisted
-from PyQt4 import QtCore, QtGui, QtTest, uic
+from PyQt5 import QtCore, QtGui, QtTest, uic
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
 import numpy as np
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
@@ -14,9 +15,9 @@ from scipy.signal import detrend
 
 from DEMONSFormat import *
 
-path = sys.path[0] + r"\Four Terminal Gate Sweep SQUID\HysterisisExpansionPack"
-Ui_HysteresisWindow, QtBaseClass = uic.loadUiType(path + r"\HysteresisExtensionWindow.ui")
-Ui_ServerList, QtBaseClass = uic.loadUiType(path + r"\requiredServers.ui")
+path = os.path.dirname(os.path.realpath(__file__))
+Ui_HysteresisWindow, QtBaseClass = uic.loadUiType(os.path.join(path, "HysteresisExtensionWindow.ui"))
+Ui_ServerList, QtBaseClass = uic.loadUiType(os.path.join(path, "requiredServers.ui"))
 
 class Hysteresis(QtGui.QMainWindow, Ui_HysteresisWindow):
     def __init__(self, reactor, UpperLevel, parent = None):
@@ -135,7 +136,7 @@ class Hysteresis(QtGui.QMainWindow, Ui_HysteresisWindow):
             
             for FieldIndex in range(FieldSteps):
                 if self.UpperLevel.DEMONS.Scanning_Flag == False:
-                    print 'Abort the Sweep'
+                    print('Abort the Sweep')
                     yield self.FinishSweep()
                     break
                         
@@ -159,7 +160,7 @@ class Hysteresis(QtGui.QMainWindow, Ui_HysteresisWindow):
                 
             for FieldIndex in reversed(range(FieldSteps)):
                 if self.UpperLevel.DEMONS.Scanning_Flag == False:
-                    print 'Abort the Sweep'
+                    print('Abort the Sweep')
                     yield self.FinishSweep()
                     break
                 
@@ -190,7 +191,7 @@ class Hysteresis(QtGui.QMainWindow, Ui_HysteresisWindow):
 
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     @inlineCallbacks
     def FinishSweep(self):
@@ -206,7 +207,7 @@ class Hysteresis(QtGui.QMainWindow, Ui_HysteresisWindow):
             saveDataToSessionFolder(self.UpperLevel.winId(), self.UpperLevel.sessionFolder, str(self.UpperLevel.lineEdit_ImageNumber.text()) + ' - ' + 'Four Terminal ' + self.UpperLevel.Parameter['DeviceName'])
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def moveDefault(self):
         self.move(200,0)

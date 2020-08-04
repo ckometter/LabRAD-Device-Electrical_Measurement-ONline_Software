@@ -37,9 +37,9 @@ import labrad.units as units
 from labrad.types import Value
 import numpy as np
 import time
-from exceptions import IndexError
+#from exceptions import IndexError
 
-TIMEOUT = Value(1,'s')
+TIMEOUT = Value(5,'s')
 BAUD    = 115200
 
 def twoByteToInt(DB1,DB2): # This gives a 16 bit integer (between +/- 2^16)
@@ -55,7 +55,7 @@ class DAC_ADCWrapper(DeviceWrapper):
     @inlineCallbacks
     def connect(self, server, port):
         """Connect to a device."""
-        print 'connecting to "%s" on port "%s"...' % (server.name, port),
+        print("connecting to %s on port %s..." % (server.name, port))
         self.server = server
         self.ctx = server.context()
         self.port = port
@@ -147,27 +147,27 @@ class DAC_ADCServer(DeviceServer):
 
     @inlineCallbacks
     def initServer(self):
-        print 'loading config info...',
+        print("loading config info...")
         self.reg = self.client.registry()
         yield self.loadConfigInfo()
-        print 'done.'
-        print self.serialLinks
+        print("done.")
+        print(self.serialLinks)
         yield DeviceServer.initServer(self)
 
     @inlineCallbacks
     def loadConfigInfo(self):
         reg = self.reg
-        yield reg.cd(['', 'Servers', 'dac_adc', 'Links'], True)
+        yield reg.cd(['', 'Servers', 'dac-adc', 'Links'], True)
         dirs, keys = yield reg.dir()
         p = reg.packet()
-        print " created packet"
-        print "printing all the keys",keys
+        print(" created packet")
+        print("printing all the keys",keys)
         for k in keys:
-            print "k=",k
+            print("k=",k)
             p.get(k, key=k)
             
         ans = yield p.send()
-        print "ans=",ans
+        print("ans=",ans)
         self.serialLinks = dict((k, ans[k]) for k in keys)
 
     @inlineCallbacks
@@ -178,17 +178,20 @@ class DAC_ADCServer(DeviceServer):
             if serServer not in self.client.servers:
                 continue
             server = self.client[serServer]
-            print server
-            print port
+            #print('HELLO')
+            print(server)
+            print(port)
             ports = yield server.list_serial_ports()
-            print ports
+            print(ports)
             if port not in ports:
                 continue
-            devName = '%s (%s)' % (name, port)
+            devName = '%s (%s)' % (serServer, port)
             devs += [(devName, (server, port))]
 
+       # devs += [(0,(3,4))]
         returnValue(devs)
 
+    
     @setting(100)
     def connect(self,c,server,port):
         dev=self.selectedDevice(c)
@@ -265,7 +268,7 @@ class DAC_ADCServer(DeviceServer):
         sfvoltages = ""
 
 
-        for x in xrange(dacN):
+        for x in range(dacN):
             sdacPorts = sdacPorts + str(dacPorts[x])
             sivoltages = sivoltages + str(ivoltages[x]) + ","
             sfvoltages = sfvoltages + str(fvoltages[x]) + ","
@@ -273,7 +276,7 @@ class DAC_ADCServer(DeviceServer):
         sivoltages = sivoltages[:-1]
         sfvoltages = sfvoltages[:-1]
 
-        for x in xrange(adcN):
+        for x in range(adcN):
             sadcPorts = sadcPorts + str(adcPorts[x])
 
         dev = self.selectedDevice(c)
@@ -282,7 +285,7 @@ class DAC_ADCServer(DeviceServer):
 
         voltages = []
         channels = []
-        data = ''
+        data = b''
 
         dev.setramping(True)
         try:
@@ -293,36 +296,40 @@ class DAC_ADCServer(DeviceServer):
                 if bytestoread > 0:
                     if nbytes + bytestoread > totalbytes:
                         tmp = yield dev.readByte(totalbytes - nbytes)
+                        if isinstance(tmp, str):
+                            tmp = tmp.encode()
                         data = data + tmp
                         nbytes = totalbytes
                     else:
                         tmp = yield dev.readByte(bytestoread)
-                        data = data + tmp
+                        if isinstance(tmp, str):
+                            tmp = tmp.encode()
                         nbytes = nbytes + bytestoread
+                        data = data + tmp
 
             dev.setramping(False)
 
             data = list(data)
 
-            for x in xrange(adcN):
+            for x in range(adcN):
                 channels.append([])
 
-            for x in xrange(0, len(data), 2):
-                b1 = int(data[x].encode('hex'), 16)
-                b2 = int(data[x + 1].encode('hex'), 16)
+            for x in range(0, len(data), 2):
+                b1 = data[x]
+                b2 = data[x + 1]
                 decimal = twoByteToInt(b1, b2)
                 voltage = map2(decimal, 0, 65536, -10.0, 10.0)
                 voltages.append(voltage)
 
-            for x in xrange(0, steps * adcN, adcN):
-                for y in xrange(adcN):
+            for x in range(0, steps * adcN, adcN):
+                for y in range(adcN):
                     try:
                         channels[y].append(voltages[x + y])
                     except IndexError:
                         channels[y].append(0)
 
         except KeyboardInterrupt:
-            print('Stopped')
+            print("Stopped")
 
         yield dev.read()
 
@@ -346,7 +353,7 @@ class DAC_ADCServer(DeviceServer):
         sfvoltages = ""
 
 
-        for x in xrange(dacN):
+        for x in range(dacN):
             sdacPorts = sdacPorts + str(dacPorts[x])
             sivoltages = sivoltages + str(ivoltages[x]) + ","
             sfvoltages = sfvoltages + str(fvoltages[x]) + ","
@@ -354,16 +361,16 @@ class DAC_ADCServer(DeviceServer):
         sivoltages = sivoltages[:-1]
         sfvoltages = sfvoltages[:-1]    
 
-        for x in xrange(adcN):
+        for x in range(adcN):
             sadcPorts = sadcPorts + str(adcPorts[x])
 
         dev = self.selectedDevice(c)
-        yield dev.write("BUFFER_RAMP_DIS,%s,%s,%s,%s,%i,%i,%i,%i\r" % (sdacPorts, sadcPorts, sivoltages, sfvoltages, steps, delay, nReadings, adcSteps))
+        yield dev.write('BUFFER_RAMP_DIS,%s,%s,%s,%s,%i,%i,%i,%i\r' % (sdacPorts, sadcPorts, sivoltages, sfvoltages, steps, delay, nReadings, adcSteps))
         #self.sigBufferRampStarted([dacPorts, adcPorts, ivoltages, fvoltages, str(steps), str(delay), str(nReadings)])
 
         voltages = []
         channels = []
-        data = ''
+        data = b''
         dev.setramping(True)
         try:
             nbytes = 0
@@ -373,36 +380,40 @@ class DAC_ADCServer(DeviceServer):
                 if bytestoread > 0:
                     if nbytes + bytestoread > totalbytes:
                         tmp = yield dev.readByte(totalbytes - nbytes)
+                        if isinstance(tmp, str):
+                            tmp = tmp.encode()
                         data = data + tmp
                         nbytes = totalbytes
                     else:
                         tmp = yield dev.readByte(bytestoread)
-                        data = data + tmp
+                        if isinstance(tmp, str):
+                            tmp = tmp.encode()
                         nbytes = nbytes + bytestoread
+                        data = data + tmp
 
             dev.setramping(False)
 
             data = list(data)
 
-            for x in xrange(adcN):
+            for x in range(adcN):
                 channels.append([])
 
-            for x in xrange(0, len(data), 2):
-                b1 = int(data[x].encode('hex'), 16)
-                b2 = int(data[x + 1].encode('hex'), 16)
+            for x in range(0, len(data), 2):
+                b1 = data[x]
+                b2 = data[x + 1]
                 decimal = twoByteToInt(b1, b2)
                 voltage = map2(decimal, 0, 65536, -10.0, 10.0)
                 voltages.append(voltage)
 
-            for x in xrange(0, totalbytes/2, adcN):
-                for y in xrange(adcN):
+            for x in range(0, totalbytes/2, adcN):
+                for y in range(adcN):
                     try:
                         channels[y].append(voltages[x + y])
                     except IndexError:
                         channels[y].append(0)
 
         except KeyboardInterrupt:
-            print('Stopped')
+            print("Stopped")
 
         #Reads BUFFER_RAMP_FINISHED
         yield dev.read()
@@ -590,7 +601,10 @@ class DAC_ADCServer(DeviceServer):
         reactor.callLater(secs,d.callback,'Sleeping')
         return d
             
-            
+    # GET_DAC hasn't been added to the DAC ADC code yet
+    # @setting(9101)
+    # def send_get_dac_requests(self,c):
+    #     yield
 
 
 __server__ = DAC_ADCServer()

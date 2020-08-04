@@ -2,12 +2,13 @@
 
 from __future__ import division
 import sys
+import os
 import twisted
-from PyQt4 import QtCore, QtGui, QtTest, uic
+from PyQt5 import QtCore, QtGui, QtTest, uic
 from twisted.internet.defer import inlineCallbacks, Deferred , returnValue
 import numpy as np
 import pyqtgraph as pg
-import exceptions
+#import exceptions
 import time
 import threading
 import copy
@@ -15,16 +16,16 @@ from scipy.signal import detrend
 #importing a bunch of stuff
 
 
-path = sys.path[0] + r"\Two Terminal Gate Sweep Probe Station"
-sys.path.append(path + r'\TwoTerminalGateSweepProbeStationSetting')
+path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(path, 'TwoTerminalGateSweepProbeStationSetting'))
 
 import TwoTerminalGateSweepProbeStationSetting
 
-TwoTerminalGateSweepProbeStationWindowUI, QtBaseClass = uic.loadUiType(path + r"\TwoTerminalGateSweepProbeStationWindow.ui")
-Ui_ServerList, QtBaseClass = uic.loadUiType(path + r"\requiredServers.ui")
+TwoTerminalGateSweepProbeStationWindowUI, QtBaseClass = uic.loadUiType(os.path.join(path, "TwoTerminalGateSweepProbeStationWindow.ui"))
+Ui_ServerList, QtBaseClass = uic.loadUiType(os.path.join(path, "requiredServers.ui"))
 
 #Not required, but strongly recommended functions used to format numbers in a particular way.
-sys.path.append(sys.path[0]+'\Resources')
+sys.path.append(os.path.join(path, 'Resources'))
 from DEMONSFormat import *
 
 class Window(QtGui.QMainWindow, TwoTerminalGateSweepProbeStationWindowUI):
@@ -232,7 +233,7 @@ class Window(QtGui.QMainWindow, TwoTerminalGateSweepProbeStationWindowUI):
             GateVoltageSet = np.linspace(StartVoltage, EndVoltage, NumberOfSteps) #Generate Gate Voltage at which to set
             for GateIndex in range(NumberOfSteps): #Sweep all the Gate Voltage
                 if self.DEMONS.Scanning_Flag == False: #Check if Aborted, if so, end the sweep
-                    print 'Abort the Sweep'
+                    print('Abort the Sweep')
                     yield self.FinishSweep(GateVoltageSet[GateIndex])
                     break #Break it outside of the for loop
                 yield Set_SIM900_VoltageOutput(self.DeviceList['DataAquisition_Device']['DeviceObject'], GateChannel, GateVoltageSet[GateIndex]) #Set the voltage to the correct voltage
@@ -257,7 +258,7 @@ class Window(QtGui.QMainWindow, TwoTerminalGateSweepProbeStationWindowUI):
                     yield self.FinishSweep(GateVoltageSet[GateIndex])
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     @inlineCallbacks
     def FinishSweep(self, currentvoltage):
@@ -270,14 +271,14 @@ class Window(QtGui.QMainWindow, TwoTerminalGateSweepProbeStationWindowUI):
             saveDataToSessionFolder(self.winId(), self.sessionFolder, str(self.lineEdit_ImageDir.text()).replace('\\','_') + '_' + str(self.lineEdit_ImageNumber.text())+ ' - ' + 'Probe Station Screening ' + self.Parameter['DeviceName'])
 
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def connectServer(self, key, server):
         try:
             self.serversList[str(key)] = server
             self.refreshServerIndicator()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     '''
     When a server is disconnected, look up which device use the server and disconnect it
@@ -286,14 +287,14 @@ class Window(QtGui.QMainWindow, TwoTerminalGateSweepProbeStationWindowUI):
         try:
             self.serversList[str(ServerName)] = False
 
-            for key, DevicePropertyList in self.DeviceList.iteritems():
+            for key, DevicePropertyList in self.DeviceList.items():
                 if str(ServerName) == str(DevicePropertyList['ComboBoxServer'].currentText()):
                     DevicePropertyList['ServerObject'] = False
                     DevicePropertyList['DeviceObject'] = False
             self.refreshServerIndicator()
             self.Refreshinterface()
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def refreshServerIndicator(self):
         try:
@@ -306,20 +307,20 @@ class Window(QtGui.QMainWindow, TwoTerminalGateSweepProbeStationWindowUI):
             if flag:
                 setIndicator(self.pushButton_Servers, 'rgb(0, 170, 0)')
 
-                for key, DevicePropertyList in self.DeviceList.iteritems():#Reconstruct all combobox when all servers are connected
+                for key, DevicePropertyList in self.DeviceList.items():#Reconstruct all combobox when all servers are connected
                     ReconstructComboBox(DevicePropertyList['ComboBoxServer'], DevicePropertyList['ServerNeeded'])
 
                 self.Refreshinterface()
             else:
                 setIndicator(self.pushButton_Servers, 'rgb(161, 0, 0)')
         except Exception as inst:
-            print 'Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno
+            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
 
     def Refreshinterface(self):
         self.DetermineEnableConditions()
         RefreshButtonStatus(self.ButtonsCondition)
 
-        for key, DevicePropertyList in self.DeviceList.iteritems():
+        for key, DevicePropertyList in self.DeviceList.items():
             RefreshIndicator(DevicePropertyList['ServerIndicator'], DevicePropertyList['ServerObject'])
             RefreshIndicator(DevicePropertyList['DeviceIndicator'], DevicePropertyList['DeviceObject'])
 

@@ -12,9 +12,9 @@ from twisted.internet import reactor
 try:
     import numpy as np
     use_numpy = True
-except ImportError, e:
-    print e
-    print "Numpy not imported.  The DataVault will operate, but will be slower."
+except ImportError as e:
+    print(str(e))
+    print("Numpy not imported.  The DataVault will operate, but will be slower.")
     use_numpy = False
 
 from labrad import types as T
@@ -48,7 +48,7 @@ def labrad_urlencode(data):
     else:
         data_bytes, t = T.flatten(data)
         all_bytes, _ = T.flatten((str(t), data_bytes), 'ss')
-    data_url = DATA_URL_PREFIX + base64.urlsafe_b64encode(all_bytes)
+    data_url = DATA_URL_PREFIX + base64.urlsafe_b64encode(all_bytes).decode('ascii')
     return data_url
 
 def labrad_urldecode(data_url):
@@ -56,6 +56,8 @@ def labrad_urldecode(data_url):
         # decode parameter data from dataurl
         all_bytes = base64.urlsafe_b64decode(data_url[len(DATA_URL_PREFIX):])
         t, data_bytes = T.unflatten(all_bytes, 'ss')
+        if isinstance(data_bytes, str):
+            data_bytes = data_bytes.encode()
         data = T.unflatten(data_bytes, t)
         return data
     else:
@@ -527,7 +529,7 @@ class HDF5MetaData(object):
     def getIndependents(self):
         attrs = self.dataset.attrs
         rv = []
-        for idx in xrange(sys.maxint):
+        for idx in range(sys.maxsize):
             prefix = 'Independent{}.'.format(idx)
             key = prefix + 'label'
             if key in attrs:
@@ -542,7 +544,7 @@ class HDF5MetaData(object):
     def getDependents(self):
         attrs = self.dataset.attrs
         rv = []
-        for idx in xrange(sys.maxint):
+        for idx in range(sys.maxsize):
             prefix = 'Dependent{}.'.format(idx)
             key = prefix + 'label'
             if key in attrs:

@@ -66,12 +66,12 @@ def getSensitivity(i, mode):
         if mode == 0: #voltage
             return 5 * 10**(-i/3)
         else:
-            return 5 * 10**(-6 - i / 3)
+            return 5 * 10**(-7 - i / 3)
     else:
         if mode == 0: #voltage
             return 2 * 10**(-i/3)
         else:
-            return 2 * 10**(-6 - i / 3)
+            return 2 * 10**(-7 - i / 3)
 
 def getSensitivityInt(v, mode):
     '''

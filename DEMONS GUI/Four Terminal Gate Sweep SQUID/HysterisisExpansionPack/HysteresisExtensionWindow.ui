@@ -904,8 +904,7 @@ color: rgb(168, 168, 168)
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">setStyleSheet(&quot;margin-left:50%; margin-right:50%;&quot;);
-</string>
+             <string notr="true">margin-left:50%; margin-right:50%;</string>
             </property>
             <property name="text">
              <string/>
