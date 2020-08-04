@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1071</width>
+    <height>540</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>100</width>
+    <height>100</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Multi Sweeper</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources/DEMONSResources.qrc">
+    <normaloff>:/Pictures/Pictures/DemonLogo.png</normaloff>:/Pictures/Pictures/DemonLogo.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#centralwidget{
+background-color: rgb(0, 0, 0);
+}
+
+QLabel{
+color:rgb(168,168,168)
+}
+
+QLineEdit{
+border: 1px solid rgb(100,100,100);
+background-color:rgb(230,230,230);
+}
+
+
+</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,5">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_Main_Top" stretch="0">
+      <item>
+       <widget class="QFrame" name="frame_Main_Basic">
+        <property name="styleSheet">
+         <string notr="true">#frame_Main_Basic{
+border:1px solid rgb(168,168,168)
+}</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout" columnstretch="1,0,0,0">
+         <item row="0" column="3">
+          <widget class="QFrame" name="frame_4">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_9" rowstretch="1"/>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QTextEdit" name="textEdit">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background:black</string>
+           </property>
+           <property name="html">
+            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#9b9b9b;&quot;&gt;Instructions:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#9b9b9b;&quot;&gt;Setting Button (below) opens &amp;quot;Instrument Bus&amp;quot;&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#9b9b9b;&quot;&gt;Test button refreshes all read values, these are all recorded datapoints&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#9b9b9b;&quot;&gt;Set BufferRamp Parameter to 1 to use BufferRamp to ramp a single voltage. To ramp multiple voltages using BufferRamp, set to 2. This then integrates delta to ramp along constant displacement fields/carrier density. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QFrame" name="frame_3">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_8" rowstretch="1,4" columnstretch="1,2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_31">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">#label_ImageNum{
+color: rgb(168, 168, 168)
+}</string>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Comment&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>187</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QTextEdit" name="textEdit_Comment">
+              <property name="font">
+               <font>
+                <pointsize>13</pointsize>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Comment will be added to datavault file after the scan finished</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="lineEdit_Device_Name">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>80</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>11</pointsize>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>Device Name, will be in the file name of datavault data.</string>
+             </property>
+             <property name="text">
+              <string>Default</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;File Name&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Datavault Folder&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_DVFolder">
+             <property name="styleSheet">
+              <string notr="true">color: rgb(168,168,168);
+background-color:rgb(0,0,0);
+border: 2px solid  rgb(131,131,131);
+border-radius: 5px</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_QueryResults">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">#frame_QueryResults{
+border:1px solid rgb(168,168,168)
+}</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="horizontalLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>971</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="hLayout_Query"/>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_Measurement">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">#frame_Measurement{
+border:1px solid rgb(168,168,168)
+}</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,0,0,2,0">
+       <item>
+        <widget class="QFrame" name="frame_6">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="Layout_FourTerminalPlot3">
+            <item>
+             <widget class="QFrame" name="frame_FourTerminalPlot3">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">#PlotArea{
+background:black
+}</string>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="1" column="4">
+                <widget class="QPushButton" name="pushButton_AddQueue">
+                 <property name="styleSheet">
+                  <string notr="true">#pushButton_AddQueue{image:url(:/Pictures/Pictures/addPlotIcon.png);background: black;}\n\nQPushButton:pressed#pushButton_Setting{
+image:url(:/Pictures/Pictures/addPlotIcon.png);background: black;
+border: 2px rgb(131,131,131);border-radius: 5px}</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="5">
+                <widget class="QPushButton" name="pushButton_AddLoop">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">#pushButton_AddLoop{image:url(:/Pictures/Pictures/subarrow.png);background: black;}</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QComboBox" name="comboBox_LoopVar"/>
+               </item>
+               <item row="1" column="3">
+                <widget class="QLineEdit" name="lineEdit_LoopSteps"/>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>End</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="6">
+                <widget class="QTableWidget" name="tableWidget_Queue">
+                 <property name="styleSheet">
+                  <string notr="true">background-color:transparent;
+selection-background-color: rgb(100, 100, 150);
+selection-color: black;
+</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>Start</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Variable</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLineEdit" name="lineEdit_LoopEnd"/>
+               </item>
+               <item row="0" column="3">
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>Steps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QPushButton" name="pushButton_ClearLoops">
+                 <property name="text">
+                  <string>Clear All</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_LoopStart"/>
+               </item>
+               <item row="0" column="4">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Add to Queue</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Nest Loop</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="5">
+                <widget class="QPushButton" name="pushButton_DeleteQueue">
+                 <property name="styleSheet">
+                  <string notr="true">#pushButton_DeleteQueue{image:url(:/Pictures/Pictures/remove.png);background: black;}</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_FourTerminalDummyRight" stretch="4">
+         <item>
+          <widget class="QFrame" name="frame_FourTerminal_SweepSettings">
+           <property name="styleSheet">
+            <string notr="true">#frame_FourTerminal_SweepSettings{
+border:1px solid rgb(168,168,168)
+}</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4" rowstretch="1,0,0,0,0,0,0" columnstretch="2,0,0">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Wait Time (s)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEdit_WaitTime">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QComboBox" name="comboBox_LivePlotIndep"/>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="lineEdit_BufferRamp">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="lineEdit_Delta">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;BufferRamp Parameter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Delta&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Live Plot:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QComboBox" name="comboBox_LivePlotDep"/>
+            </item>
+            <item row="4" column="2">
+             <widget class="QCheckBox" name="checkBox_LivePlot">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>20</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>CheckBox</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_Current_Lockin_Setting">
+         <property name="styleSheet">
+          <string notr="true">#frame_Current_Lockin_Setting{
+border:1px solid rgb(168,168,168)
+}</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0,0,0,0" columnstretch="2,0">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="pushButton_StartSweep">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Start sweep. Will parameter on lock-ins when pressed.</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton:disabled#pushButton_StartSweep{
+color: rgb(168,168,168);
+background-color:rgb(50,50,50);
+border: 1px solid rgb(168,168,168);
+border-radius: 5px
+}
+
+QPushButton:pressed#pushButton_StartSweep{
+color: rgb(0,255,0);
+background-color:rgb(150,150,150);
+border: 1px solid rgb(0,255,0);
+border-radius: 5px
+}
+
+QPushButton#pushButton_StartSweep{
+color: rgb(0,255,0);
+background-color:rgb(0,0,0);
+border: 2px solid rgb(0,255,0);
+border-radius: 5px
+}
+
+</string>
+            </property>
+            <property name="text">
+             <string>Start Sweep</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QProgressBar" name="progressBar_Loop">
+            <property name="styleSheet">
+             <string notr="true">QProgressBar#progressBar_Loop{
+	background-color: rgb(255, 255, 255);
+	border: 1px;
+
+}</string>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pushButton_AbortSweep">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Abort Sweep</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton:disabled#pushButton_AbortSweep{
+color: rgb(168,168,168);
+background-color:rgb(50,50,50);
+border: 1px solid rgb(168,168,168);
+border-radius: 5px
+}
+
+QPushButton:pressed#pushButton_AbortSweep{
+color: rgb(255,0,0);
+background-color:rgb(150,150,150);
+border: 1px solid rgb(255,0,0);
+border-radius: 5px
+}
+
+QPushButton#pushButton_AbortSweep{
+color: rgb(255,0,0);
+background-color:rgb(0,0,0);
+border: 2px solid rgb(255,0,0);
+border-radius: 5px
+}
+
+</string>
+            </property>
+            <property name="text">
+             <string>Abort Sweep</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Sweep Progress:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="pushButton_Query">
+            <property name="minimumSize">
+             <size>
+              <width>75</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Query bus</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#pushButton_Query{
+image:url(:/Pictures/Pictures/refreshIcon.png);
+background: black;
+}</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton_Setting">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Edit Bus</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#pushButton_Setting{
+image:url(:/Pictures/Pictures/Setting.png);
+background: black;
+}
+
+QPushButton:pressed#pushButton_Setting{
+image:url(:/Pictures/Pictures/Setting.png);
+background: black;
+border: 2px rgb(131,131,131);
+border-radius: 5px
+}</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>comboBox_LoopVar</tabstop>
+  <tabstop>lineEdit_LoopStart</tabstop>
+  <tabstop>lineEdit_LoopEnd</tabstop>
+  <tabstop>lineEdit_LoopSteps</tabstop>
+  <tabstop>pushButton_AddQueue</tabstop>
+  <tabstop>pushButton_AddLoop</tabstop>
+  <tabstop>lineEdit_WaitTime</tabstop>
+  <tabstop>lineEdit_BufferRamp</tabstop>
+  <tabstop>lineEdit_Delta</tabstop>
+  <tabstop>lineEdit_Device_Name</tabstop>
+  <tabstop>textEdit_Comment</tabstop>
+  <tabstop>textEdit</tabstop>
+  <tabstop>pushButton_StartSweep</tabstop>
+  <tabstop>pushButton_AbortSweep</tabstop>
+  <tabstop>pushButton_Query</tabstop>
+  <tabstop>pushButton_Setting</tabstop>
+  <tabstop>comboBox_LivePlotIndep</tabstop>
+  <tabstop>comboBox_LivePlotDep</tabstop>
+  <tabstop>checkBox_LivePlot</tabstop>
+  <tabstop>pushButton_ClearLoops</tabstop>
+  <tabstop>tableWidget_Queue</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../Resources/DEMONSResources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

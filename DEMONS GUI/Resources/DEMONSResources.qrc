@@ -20,5 +20,7 @@
     <file>Pictures/Four Terminal.png</file>
     <file>Pictures/Landaul Fan.PNG</file>
     <file>Pictures/SessionSelect.png</file>
+    <file>Pictures/subarrow.png</file>
+    <file>Pictures/remove.png</file>
   </qresource>
 </RCC>

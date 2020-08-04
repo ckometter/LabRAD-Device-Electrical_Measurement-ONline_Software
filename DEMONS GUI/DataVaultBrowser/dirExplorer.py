@@ -25,6 +25,7 @@ class dataVaultExplorer(QtGui.QMainWindow, Ui_dvExplorer):
         self.dv = dv 
 
         self.curDir = ''
+        self.selectedfile = ''
 
         self.dirList.itemDoubleClicked.connect(self.updateDirs)
         self.fileList.itemSelectionChanged.connect(self.fileSelect)
@@ -108,13 +109,13 @@ class dataVaultExplorer(QtGui.QMainWindow, Ui_dvExplorer):
     @inlineCallbacks
     def selectDirFile(self, c):
         self.directory = yield self.dv.cd()
-        
+        self.selectedfile = self.currentFile.text()
         self.accepted.emit()
 
         #Reset all selected files and close
-        selectedItem = self.fileList.selectedItems()
-        for item in selectedItem:
-            self.fileList.setItemSelected(item, False)
+        #selectedItem = self.fileList.selectedItems()
+        #for item in selectedItem:
+        #    self.fileList.setItemSelected(item, False)
         self.close()
 
     def closeWindow(self):

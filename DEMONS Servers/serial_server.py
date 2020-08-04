@@ -19,7 +19,7 @@
 ### BEGIN NODE INFO
 [info]
 name = Serial Server
-version = 1.3.0
+version = 1.2
 description =
 instancename = %LABRADNODE% Serial Server
 
@@ -75,15 +75,15 @@ class SerialServer(LabradServer):
             self.enumerate_serial_pyserial()
 
     def enumerate_serial_windows(self):
-        """Manually Enumerate the first 48 COM ports.
+        """Manually Enumerate the first 20 COM ports.
 
         pyserial includes a function to enumerate device names, but it
         possibly doesn't work right on windows for COM ports above 4.
         http://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
         """
         self.SerialPorts = []
-        print 'Searching for COM ports:'
-        for a in range(1, 48):
+        print("Searching for COM ports:")
+        for a in range(1, 20):
             COMexists = True
             dev_name = 'COM{}'.format(a)
             dev_path = r'\\.\{}'.format(dev_name)
@@ -91,13 +91,14 @@ class SerialServer(LabradServer):
                 ser = Serial(dev_name)
                 ser.close()
             except SerialException as e:
-                if e.message.find('cannot find') >= 0:
+                message = str(e)
+                if message.find('cannot find') >= 0:
                     COMexists = False
             if COMexists:
                 self.SerialPorts.append(SerialDevice(dev_name, dev_path))
-                print "  ", dev_name
+                print("  ", dev_name)
         if not len(self.SerialPorts):
-            print '  none'
+            print("  none")
 
     def enumerate_serial_pyserial(self):
         """This uses the pyserial built-in device enumeration.
@@ -122,6 +123,7 @@ class SerialServer(LabradServer):
             else:
                 _, _, dev_name = dev_path.rpartition(os.sep)
                 self.SerialPorts.append(SerialDevice(dev_name, dev_path))
+                print("  ", dev_name)
 
     def expireContext(self, c):
         if 'PortObject' in c:
@@ -141,7 +143,8 @@ class SerialServer(LabradServer):
         NOTES:
         This list contains all ports installed on the computer,
         including ones that are already in use by other programs."""
-        print self.SerialPorts
+        self.initServer()
+        print(self.SerialPorts)
         port_list = [x.name for x in self.SerialPorts]
 
         return port_list
@@ -182,11 +185,12 @@ class SerialServer(LabradServer):
                     try:
                         c['PortObject'] = Serial(x.devicepath, timeout=0)
                         return x.name
-                    except SerialException, e:
-                        if e.message.find('cannot find') >= 0:
-                            raise Error(code=1, msg=e.message)
+                    except SerialException as e:
+                        message = str(e)
+                        if message.find('cannot find') >= 0:
+                            raise Error(code=1, msg=message)
                         else:
-                            raise Error(code=2, msg=e.message)
+                            raise Error(code=2, msg=message)
         raise Error(code=1, msg='Unknown port %s' % (port,))
 
     @setting(11, 'Close', returns=[''])
@@ -209,7 +213,7 @@ class SerialServer(LabradServer):
         else:
             if data in baudrates:
                 ser.baudrate = data
-            return long(ser.baudrate)
+            return int(ser.baudrate)
 
     @setting(21, 'Bytesize',
              data=[': List bytesizes',
@@ -225,7 +229,7 @@ class SerialServer(LabradServer):
         else:
             if data in bytesizes:
                 ser.bytesize = data
-            return long(ser.bytesize)
+            return int(ser.bytesize)
 
     @setting(22, 'Parity',
              data=[': List parities',
@@ -258,7 +262,7 @@ class SerialServer(LabradServer):
         else:
             if data in stopbits:
                 ser.stopbits = data
-            return long(ser.stopbits)
+            return int(ser.stopbits)
 
     @setting(25, 'Timeout',
              data=[': Return immediately',
@@ -292,16 +296,16 @@ class SerialServer(LabradServer):
         ser = self.getPort(c)
         if not isinstance(data, str):
             data = ''.join(chr(x & 255) for x in data)
-        ser.write(data)
-        return long(len(data))
+        ser.write(bytes(data, 'UTF-8'))
+        return int(len(data))
 
     @setting(41, 'Write Line', data=['s: Data to send'],
              returns=['w: Bytes sent'])
     def write_line(self, c, data):
         """Sends data over the port appending CR LF."""
         ser = self.getPort(c)
-        ser.write(data + '\r\n')
-        return long(len(data) + 2)
+        ser.write(bytes(data + '\r\n', 'UTF-8'))
+        return int(len(data) + 2)
 
     @setting(42, 'Pause', duration='v[s]: Time to pause', returns=[])
     def pause(self, c, duration):
@@ -345,7 +349,7 @@ class SerialServer(LabradServer):
 
         if r == timeout_object:
             elapsed = time.time() - start_time
-            print "deferredRead timed out after {} seconds".format(elapsed)
+            print ("deferredRead timed out after {} seconds".format(elapsed))
             r = ''
         if r == '':
             r = ser.read(count)
@@ -357,18 +361,18 @@ class SerialServer(LabradServer):
         ser = self.getPort(c)
 
         if count == 0:
-            returnValue(ser.read(10000))
+            returnValue(b''+ser.read(10000))
 
         timeout = c['Timeout']
         if timeout == 0:
-            returnValue(ser.read(count))
+            returnValue(b''+ser.read(count))
 
-        recd = ''
+        recd = b''
         while len(recd) < count:
             r = ser.read(count - len(recd))
-            if r == '':
+            if r == b'':
                 r = yield self.deferredRead(ser, timeout, count - len(recd))
-                if r == '':
+                if r == b'':
                     ser.close()
                     ser.open()
                     break
@@ -396,7 +400,7 @@ class SerialServer(LabradServer):
     def read_as_words(self, c, data=0):
         """Read data from the port."""
         ans = yield self.readSome(c, data)
-        returnValue([long(ord(x)) for x in ans])
+        returnValue([int(ord(x)) for x in ans])
 
     @setting(52, 'Read Line',
              data=[': Read until LF, ignoring CRs',
@@ -409,17 +413,17 @@ class SerialServer(LabradServer):
         timeout = c['Timeout']
 
         if data:
-            delim, skip = data, ''
+            delim, skip = data, b''
         else:
-            delim, skip = '\n', '\r'
+            delim, skip = b'\n', b'\r'
 
-        recd = ''
+        recd = b''
         while True:
             r = ser.read(1)
-            if r == '' and timeout > 0:
+            if r == b'' and timeout > 0:
                 # only try a deferred read if there is a timeout
                 r = yield self.deferredRead(ser, timeout)
-            if r in ('', delim):
+            if r in (b'', delim):
                 break
             if r != skip:
                 recd += r

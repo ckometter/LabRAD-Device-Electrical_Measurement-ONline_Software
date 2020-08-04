@@ -4,6 +4,9 @@ import os
 from PyQt5 import Qt, QtGui, QtWidgets, QtCore, uic
 import time 
 import ctypes
+import traceback
+import subprocess
+
 #import exceptions
 #myappid = 'YoungLab.DeviceElectricalMeasurementONlineSoftware'
 #ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -12,22 +15,24 @@ path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(path, 'Resources'))
 sys.path.append(os.path.join(path, 'Labrad Connect'))
 sys.path.append(os.path.join(path, 'DataVaultBrowser'))
-sys.path.append(os.path.join(path, 'Four Terminal Gate Sweep Probe Station'))
-sys.path.append(os.path.join(path, 'Two Terminal Gate Sweep Probe Station'))
+sys.path.append(os.path.join(path, 'Transport Gate Sweep'))
 sys.path.append(os.path.join(path, 'Four Terminal Gate Sweep SQUID'))
 sys.path.append(os.path.join(path, 'DAC Controler'))
-# sys.path.append(path + r'\Data Plotter')
+sys.path.append(os.path.join(path, 'Fridge Status'))
+sys.path.append(os.path.join(path, 'DV Plotter'))
+
 
 UI_path = os.path.join(path, "MainWindow.ui")
 MainWindowUI, QtBaseClass = uic.loadUiType(UI_path)
 
 #import all windows for gui
 import LabRADConnect
-import FourTerminalGateSweepProbeStation
-import TwoTerminalGateSweepProbeStation
+import TransportGateSweep
 import FourTerminalGateSweepSQUID
 import DACControler
-# import DataPlotter
+import FridgeStatus
+import DVPlotter
+import MultiSweeper
 from DEMONSFormat import *
 
 
@@ -49,20 +54,24 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
         #Intialize all widgets. 
         self.MeasurementWindows = {
             'LabRAD': LabRADConnect.Window(self.reactor, None),
-            'FourTerminalGateSweepProbeStationWindow': FourTerminalGateSweepProbeStation.Window(self.reactor, self, None),
-            'TwoTerminalGateSweepProbeStationWindow': TwoTerminalGateSweepProbeStation.Window(self.reactor, self, None),
+            'TransportGateSweep': MultiSweeper.Window(self.reactor, self, None),
+            #'TwoTerminalGateSweepProbeStationWindow': TwoTerminalGateSweepProbeStation.Window(self.reactor, self, None),
             'DACTrackerWindow': DACControler.Window(self.reactor, None),
-            'FourTerminalGateSweepSQUIDWindow': FourTerminalGateSweepSQUID.Window(self.reactor, self, None),
-            # 'DataPlotterWindow': DataPlotter.Window(self.reactor, self, None),
+            #'FourTerminalGateSweepSQUIDWindow': FourTerminalGateSweepSQUID.Window(self.reactor, self, None),
+            'FridgeStatus': FridgeStatus.Window(self.reactor, None),
+            'DVPlotterWindow': DVPlotter.Window(self.reactor, None),
         }
         
         self.pushButton_LabRADConnect.clicked.connect(lambda: openWindow(self.MeasurementWindows['LabRAD']))
-        self.pushButton_FourTerminalGateSweepProbeStation.clicked.connect(lambda: openWindow(self.MeasurementWindows['FourTerminalGateSweepProbeStationWindow']))
+        self.pushButton_TransportGateSweep.clicked.connect(lambda: openWindow(self.MeasurementWindows['TransportGateSweep']))
         self.pushButton_DACADC_Tracker.clicked.connect(lambda: openWindow(self.MeasurementWindows['DACTrackerWindow']))
-        self.pushButton_FourTerminalGateSweepSQUID.clicked.connect(lambda: openWindow(self.MeasurementWindows['FourTerminalGateSweepSQUIDWindow']))
-        self.pushButton_TwoTerminalGateSweepProbeStation.clicked.connect(lambda: openWindow(self.MeasurementWindows['TwoTerminalGateSweepProbeStationWindow']))
-        # self.pushButton_DataPlotter.clicked.connect(lambda: openWindow(self.MeasurementWindows['DataPlotterWindow']))
-        
+        #self.pushButton_FourTerminalGateSweepSQUID.clicked.connect(lambda: openWindow(self.MeasurementWindows['FourTerminalGateSweepSQUIDWindow']))
+        #self.pushButton_TwoTerminalGateSweepProbeStation.clicked.connect(lambda: openWindow(self.MeasurementWindows['TwoTerminalGateSweepProbeStationWindow']))
+        self.pushButton_FridgeStatus.clicked.connect(lambda: openWindow(self.MeasurementWindows['FridgeStatus']))
+        # for homemade data plotter
+        #self.pushButton_DataPlotter.clicked.connect(lambda: openWindow(self.MeasurementWindows['DVPlotterWindow']))
+        # for afylab data plotter
+        self.pushButton_DataPlotter.clicked.connect(lambda: runDVPlotter())
         self.MeasurementWindows['LabRAD'].cxnsignal.connect(self.connect)
         self.MeasurementWindows['LabRAD'].discxnsignal.connect(self.disconnect)
         self.MeasurementWindows['LabRAD'].newSessionFolder.connect(self.distributeSessionFolder)
@@ -84,7 +93,8 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                     if str(key) in window.serversList:
                         window.connectServer(str(key), object)
         except Exception as inst:
-            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
+            print('Error:', inst, ' on line: ', sys.exc_info()[2])
+            traceback.print_tb(sys.exc_info()[2])
 
     def disconnect(self, key):
         try:
@@ -93,15 +103,15 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                     if str(key) in window.serversList:
                         window.disconnectServer(key)
         except Exception as inst:
-            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
-
+            print('Error:', inst, ' on line: ', sys.exc_info()[2].tb_lineno)
+        
     def updateDataVaultFolder(self, DVfolder):
         try:
             for name, window in self.MeasurementWindows.items():
                 if 'dv' in window.serversList:
                     window.updateDataVaultDirectory(window, DVfolder)
         except Exception as inst:
-            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
+            print('Error:', inst, ' on line: ', sys.exc_info()[2].tb_lineno)
 
     def distributeSessionFolder(self, folder):
         try:
@@ -111,7 +121,7 @@ class MainWindow(QtGui.QMainWindow, MainWindowUI):
                     window.setSessionFolder(folder)
         
         except Exception as inst:
-            print('Error:', inst, ' on line: ', sys.exc_traceback.tb_lineno)
+            print('Error:', inst, ' on line: ', sys.exc_info()[2].tb_lineno)
 
     def SetScanningFlag(self, State):
         self.Scanning_Flag = State
@@ -133,6 +143,8 @@ if __name__=="__main__":
     app = QtGui.QApplication(sys.argv)
     qt5reactor.install()
     from twisted.internet import reactor
+    #from labrad.units import V, mV, us, ns, GHz, MHz, Hz, K, deg
+
     window = MainWindow(reactor)
     window.show()
     reactor.runReturn()
